@@ -1,16 +1,12 @@
 # woodbine
 
-A new Flutter project.
+Desktop dice rolling app that solves a couple of problems with all the die rolling apps I was able to find out there.
 
-## Getting Started
+- Offline
+- Roll any number of dice
+- Dice can have any sides
+- See a history of rolls
+- Re-roll button on history let's you roll a new one like that
+- No ads
+- No weird interface - just push the button and clearly see the results
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
