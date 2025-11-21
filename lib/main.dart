@@ -49,6 +49,20 @@ class DiceRollerApp extends StatelessWidget {
   }
 }
 
+class RollRecord {
+  final DateTime time;
+  final List<int> rolls;
+  final int modifier;
+  final int total;
+
+  RollRecord({
+    required this.time,
+    required this.rolls,
+    required this.modifier,
+    required this.total,
+  });
+}
+
 class DiceRollerPage extends StatefulWidget {
   const DiceRollerPage({super.key});
 
@@ -66,8 +80,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   int? _displayedNumber;
   bool _isRolling = false;
 
-  // Breakdown of last roll (each die)
-  List<int> _lastRolls = [];
+  // History of rolls
+  final List<RollRecord> _history = [];
 
   // Controls for input limits
   final int _minDice = 1;
@@ -80,6 +94,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   // UI state
   bool _showBreakdown = true;
 
+  // maximum history entries to keep
+  final int _maxHistory = 200;
+
   @override
   void initState() {
     super.initState();
@@ -91,7 +108,6 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
 
     setState(() {
       _isRolling = true;
-      _lastRolls = [];
     });
 
     final int minValue = _diceCount * 1 + _modifier;
@@ -119,10 +135,20 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       await Future.delayed(Duration(milliseconds: delayMs));
     }
 
-    // Finally show the actual result and store breakdown
+    // Finally show the actual result and store breakdown in history
+    final record = RollRecord(
+      time: DateTime.now().toUtc(),
+      rolls: rolls,
+      modifier: _modifier,
+      total: finalResult,
+    );
+
     setState(() {
       _displayedNumber = finalResult;
-      _lastRolls = rolls;
+      _history.insert(0, record); // newest first
+      if (_history.length > _maxHistory) {
+        _history.removeRange(_maxHistory, _history.length);
+      }
     });
 
     // brief glow: wait a bit so user sees final number
@@ -215,16 +241,16 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _breakdownChips() {
-    if (_lastRolls.isEmpty) {
+  Widget _breakdownChipsFromRoll(List<int> rolls, int modifier) {
+    if (rolls.isEmpty) {
       return const Text('No rolls yet', style: TextStyle(color: Colors.black54));
     }
 
     List<Widget> chips = [];
-    for (int i = 0; i < _lastRolls.length; i++) {
+    for (int i = 0; i < rolls.length; i++) {
       chips.add(
         Chip(
-          label: Text('d${i + 1}: ${_lastRolls[i]}'),
+          label: Text('d${i + 1}: ${rolls[i]}'),
           backgroundColor: Colors.grey[100],
         ),
       );
@@ -233,7 +259,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     // modifier chip
     chips.add(
       Chip(
-        label: Text('modifier: ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
+        label: Text('modifier: ${modifier >= 0 ? "+$modifier" : modifier}'),
         backgroundColor: Colors.grey[200],
       ),
     );
@@ -245,20 +271,17 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _breakdownHistogram() {
-    if (_lastRolls.isEmpty) {
+  Widget _breakdownHistogramFromRoll(List<int> rolls, int faces) {
+    if (rolls.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // only show histogram for reasonable number of different faces
-    final int faces = _sides;
     final counts = List<int>.filled(faces + 1, 0); // index 1..faces
-    for (var v in _lastRolls) {
+    for (var v in rolls) {
       if (v >= 1 && v <= faces) counts[v]++;
     }
     final int maxCount = counts.skip(1).fold(0, (p, e) => max(p, e));
 
-    // If too many faces, put histogram in scrollable
     final bars = List.generate(faces, (i) {
       final face = i + 1;
       final int c = counts[face];
@@ -307,6 +330,93 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
+  String _formatUtcLocal(DateTime dt) {
+    final local = dt.toLocal();
+    // Simple formatting: YYYY-MM-DD HH:MM
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
+  }
+
+  Widget _historyList() {
+    if (_history.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 12.0),
+        child: Text('No history yet', style: TextStyle(color: Colors.black54)),
+      );
+    }
+
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _history.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, idx) {
+        final r = _history[idx];
+        return Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Colors.deepPurple,
+                      child: Text(
+                        r.total.toString(),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${r.rolls.length}d$_sides ${r.modifier >= 0 ? "+${r.modifier}" : r.modifier}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Text(
+                      _formatUtcLocal(r.time),
+                      style: const TextStyle(color: Colors.black54, fontSize: 12),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // show first N rolls as chips, collapse if too many
+                _buildRollsPreview(r.rolls),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRollsPreview(List<int> rolls) {
+    const int maxShown = 12;
+    if (rolls.length <= maxShown) {
+      return _breakdownChipsFromRoll(rolls, _modifier);
+    } else {
+      final shown = rolls.sublist(0, maxShown);
+      final remaining = rolls.length - maxShown;
+      final chips = <Widget>[];
+      for (int i = 0; i < shown.length; i++) {
+        chips.add(Chip(label: Text('${shown[i]}'), backgroundColor: Colors.grey[100]));
+      }
+      chips.add(Chip(label: Text('… +$remaining more'), backgroundColor: Colors.grey[200]));
+      chips.add(Chip(label: Text('mod ${_modifier >= 0 ? "+$_modifier" : _modifier}'), backgroundColor: Colors.grey[200]));
+      return Wrap(spacing: 8, runSpacing: 6, children: chips);
+    }
+  }
+
+  void _clearHistory() {
+    setState(() {
+      _history.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // For non-desktop platforms we still constrain the UI to look pager-like.
@@ -337,7 +447,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                       ),
                     ),
 
-                    // Controls and breakdown
+                    // Controls and breakdown + history
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
@@ -557,7 +667,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text('Last roll', style: TextStyle(fontWeight: FontWeight.w600)),
+                                const Text('Last roll & history', style: TextStyle(fontWeight: FontWeight.w600)),
                                 Row(
                                   children: [
                                     IconButton(
@@ -568,7 +678,12 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                         });
                                       },
                                       icon: Icon(_showBreakdown ? Icons.expand_less : Icons.expand_more),
-                                    )
+                                    ),
+                                    IconButton(
+                                      tooltip: 'Clear history',
+                                      onPressed: _history.isEmpty ? null : _clearHistory,
+                                      icon: const Icon(Icons.delete_outline),
+                                    ),
                                   ],
                                 ),
                               ],
@@ -578,12 +693,31 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // chips for each die and modifier
-                                  _breakdownChips(),
-                                  const SizedBox(height: 12),
-                                  // histogram
-                                  _breakdownHistogram(),
-                                  const SizedBox(height: 10),
+                                  // show most recent roll breakdown (if any)
+                                  if (_history.isNotEmpty) ...[
+                                    const Text('Most recent'),
+                                    const SizedBox(height: 8),
+                                    _breakdownChipsFromRoll(_history.first.rolls, _history.first.modifier),
+                                    const SizedBox(height: 12),
+                                    _breakdownHistogramFromRoll(_history.first.rolls, _sides),
+                                    const SizedBox(height: 12),
+                                  ] else
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 8.0),
+                                      child: Text('No rolls yet', style: TextStyle(color: Colors.black54)),
+                                    ),
+
+                                  // history section
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text('History', style: TextStyle(fontWeight: FontWeight.w600)),
+                                      Text('${_history.length} entries', style: const TextStyle(color: Colors.black54)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  _historyList(),
+                                  const SizedBox(height: 8),
                                   // textual details
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -598,8 +732,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                               Padding(
                                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                                 child: Text(
-                                  _lastRolls.isNotEmpty
-                                      ? 'Result: ${_displayedNumber ?? 0}  —  Rolls: ${_lastRolls.join(", ")} ${_modifier != 0 ? " (modifier ${_modifier >= 0 ? "+$_modifier" : _modifier})" : ""}'
+                                  _history.isNotEmpty
+                                      ? 'Latest: ${_history.first.total}  —  Rolls: ${_history.first.rolls.join(", ")} ${_history.first.modifier != 0 ? " (modifier ${_history.first.modifier >= 0 ? "+${_history.first.modifier}" : _history.first.modifier})" : ""}'
                                       : 'No rolls yet',
                                   style: const TextStyle(color: Colors.black54),
                                 ),
