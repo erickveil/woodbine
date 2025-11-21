@@ -54,12 +54,14 @@ class RollRecord {
   final List<int> rolls;
   final int modifier;
   final int total;
+  final int sides;
 
   RollRecord({
     required this.time,
     required this.rolls,
     required this.modifier,
     required this.total,
+    required this.sides,
   });
 }
 
@@ -141,6 +143,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       rolls: rolls,
       modifier: _modifier,
       total: finalResult,
+      sides: _sides,
     );
 
     setState(() {
@@ -152,6 +155,59 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     });
 
     // brief glow: wait a bit so user sees final number
+    await Future.delayed(const Duration(milliseconds: 450));
+
+    setState(() => _isRolling = false);
+  }
+
+  // Re-roll based on a history record's configuration (does not alter current inputs).
+  Future<void> _rerollFromRecord(RollRecord record) async {
+    if (_isRolling) return;
+
+    setState(() {
+      _isRolling = true;
+    });
+
+    final int count = record.rolls.length;
+    final int sides = record.sides;
+    final int modifier = record.modifier;
+
+    final int minValue = count * 1 + modifier;
+    final int maxValue = count * sides + modifier;
+
+    // perform new rolls (but do not change UI inputs)
+    List<int> rolls = List.generate(count, (_) => _rng.nextInt(sides) + 1);
+    int finalResult = rolls.fold(0, (p, e) => p + e) + modifier;
+
+    // Animation similar to _rollDice but using the record's configuration
+    const int frames = 28;
+    const int firstDelayMs = 25;
+    const int lastDelayMs = 180;
+
+    for (int i = 0; i < frames; i++) {
+      final double t = i / (frames - 1);
+      final int delayMs = (firstDelayMs * (1 - t) + lastDelayMs * t).round();
+      final int intermediate = _rng.nextInt(maxValue - minValue + 1) + minValue;
+      setState(() => _displayedNumber = intermediate);
+      await Future.delayed(Duration(milliseconds: delayMs));
+    }
+
+    final newRecord = RollRecord(
+      time: DateTime.now().toUtc(),
+      rolls: rolls,
+      modifier: modifier,
+      total: finalResult,
+      sides: sides,
+    );
+
+    setState(() {
+      _displayedNumber = finalResult;
+      _history.insert(0, newRecord);
+      if (_history.length > _maxHistory) {
+        _history.removeRange(_maxHistory, _history.length);
+      }
+    });
+
     await Future.delayed(const Duration(milliseconds: 450));
 
     setState(() => _isRolling = false);
@@ -373,7 +429,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '${r.rolls.length}d$_sides ${r.modifier >= 0 ? "+${r.modifier}" : r.modifier}',
+                        '${r.rolls.length}d${r.sides} ${r.modifier >= 0 ? "+${r.modifier}" : r.modifier}',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),
@@ -381,11 +437,17 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                       _formatUtcLocal(r.time),
                       style: const TextStyle(color: Colors.black54, fontSize: 12),
                     ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      tooltip: 'Re-roll this entry',
+                      onPressed: _isRolling ? null : () => _rerollFromRecord(r),
+                      icon: const Icon(Icons.refresh),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 // show first N rolls as chips, collapse if too many
-                _buildRollsPreview(r.rolls),
+                _buildRollsPreview(r.rolls, r.modifier),
               ],
             ),
           ),
@@ -394,10 +456,10 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _buildRollsPreview(List<int> rolls) {
+  Widget _buildRollsPreview(List<int> rolls, int modifier) {
     const int maxShown = 12;
     if (rolls.length <= maxShown) {
-      return _breakdownChipsFromRoll(rolls, _modifier);
+      return _breakdownChipsFromRoll(rolls, modifier);
     } else {
       final shown = rolls.sublist(0, maxShown);
       final remaining = rolls.length - maxShown;
@@ -406,7 +468,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
         chips.add(Chip(label: Text('${shown[i]}'), backgroundColor: Colors.grey[100]));
       }
       chips.add(Chip(label: Text('… +$remaining more'), backgroundColor: Colors.grey[200]));
-      chips.add(Chip(label: Text('mod ${_modifier >= 0 ? "+$_modifier" : _modifier}'), backgroundColor: Colors.grey[200]));
+      chips.add(Chip(label: Text('mod ${modifier >= 0 ? "+$modifier" : modifier}'), backgroundColor: Colors.grey[200]));
       return Wrap(spacing: 8, runSpacing: 6, children: chips);
     }
   }
@@ -699,7 +761,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                     const SizedBox(height: 8),
                                     _breakdownChipsFromRoll(_history.first.rolls, _history.first.modifier),
                                     const SizedBox(height: 12),
-                                    _breakdownHistogramFromRoll(_history.first.rolls, _sides),
+                                    _breakdownHistogramFromRoll(_history.first.rolls, _history.first.sides),
                                     const SizedBox(height: 12),
                                   ] else
                                     const Padding(
