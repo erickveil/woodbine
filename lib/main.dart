@@ -121,7 +121,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
 
     // Animation: cycle through random numbers in [minValue, maxValue],
     // starting fast and slowing down.
-    const int frames = 28;
+    const int frames = 20;
     const int firstDelayMs = 25;
     const int lastDelayMs = 180;
 
@@ -180,7 +180,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     int finalResult = rolls.fold(0, (p, e) => p + e) + modifier;
 
     // Animation similar to _rollDice but using the record's configuration
-    const int frames = 28;
+    const int frames = 20;
     const int firstDelayMs = 25;
     const int lastDelayMs = 180;
 
@@ -306,7 +306,10 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     for (int i = 0; i < rolls.length; i++) {
       chips.add(
         Chip(
-          label: Text('d${i + 1}: ${rolls[i]}'),
+          label: Text('${rolls[i]}', style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            )),
           backgroundColor: Colors.grey[100],
         ),
       );
