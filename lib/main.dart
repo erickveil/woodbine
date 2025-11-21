@@ -66,6 +66,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   int? _displayedNumber;
   bool _isRolling = false;
 
+  // Breakdown of last roll (each die)
+  List<int> _lastRolls = [];
+
   // Controls for input limits
   final int _minDice = 1;
   final int _maxDice = 100;
@@ -73,6 +76,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   final int _maxSides = 1000; // arbitrary practical limit
   final int _minModifier = -10000;
   final int _maxModifier = 10000;
+
+  // UI state
+  bool _showBreakdown = true;
 
   @override
   void initState() {
@@ -83,17 +89,17 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   Future<void> _rollDice() async {
     if (_isRolling) return;
 
-    setState(() => _isRolling = true);
+    setState(() {
+      _isRolling = true;
+      _lastRolls = [];
+    });
 
     final int minValue = _diceCount * 1 + _modifier;
     final int maxValue = _diceCount * _sides + _modifier;
 
-    // Simulate actual dice rolls to compute the final result
-    int finalResult = 0;
-    for (int i = 0; i < _diceCount; i++) {
-      finalResult += _rng.nextInt(_sides) + 1;
-    }
-    finalResult += _modifier;
+    // Simulate actual dice rolls to compute the final result and keep breakdown
+    List<int> rolls = List.generate(_diceCount, (_) => _rng.nextInt(_sides) + 1);
+    int finalResult = rolls.fold(0, (p, e) => p + e) + _modifier;
 
     // Animation: cycle through random numbers in [minValue, maxValue],
     // starting fast and slowing down.
@@ -113,8 +119,11 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       await Future.delayed(Duration(milliseconds: delayMs));
     }
 
-    // Finally show the actual result with a small highlight animation
-    setState(() => _displayedNumber = finalResult);
+    // Finally show the actual result and store breakdown
+    setState(() {
+      _displayedNumber = finalResult;
+      _lastRolls = rolls;
+    });
 
     // brief glow: wait a bit so user sees final number
     await Future.delayed(const Duration(milliseconds: 450));
@@ -206,6 +215,98 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
+  Widget _breakdownChips() {
+    if (_lastRolls.isEmpty) {
+      return const Text('No rolls yet', style: TextStyle(color: Colors.black54));
+    }
+
+    List<Widget> chips = [];
+    for (int i = 0; i < _lastRolls.length; i++) {
+      chips.add(
+        Chip(
+          label: Text('d${i + 1}: ${_lastRolls[i]}'),
+          backgroundColor: Colors.grey[100],
+        ),
+      );
+    }
+
+    // modifier chip
+    chips.add(
+      Chip(
+        label: Text('modifier: ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
+        backgroundColor: Colors.grey[200],
+      ),
+    );
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: chips,
+    );
+  }
+
+  Widget _breakdownHistogram() {
+    if (_lastRolls.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // only show histogram for reasonable number of different faces
+    final int faces = _sides;
+    final counts = List<int>.filled(faces + 1, 0); // index 1..faces
+    for (var v in _lastRolls) {
+      if (v >= 1 && v <= faces) counts[v]++;
+    }
+    final int maxCount = counts.skip(1).fold(0, (p, e) => max(p, e));
+
+    // If too many faces, put histogram in scrollable
+    final bars = List.generate(faces, (i) {
+      final face = i + 1;
+      final int c = counts[face];
+      final double fraction = maxCount == 0 ? 0 : c / maxCount;
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(c.toString(), style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 4),
+          Container(
+            width: 18,
+            height: 80,
+            alignment: Alignment.bottomCenter,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.black12),
+              color: Colors.white,
+            ),
+            child: FractionallySizedBox(
+              heightFactor: fraction,
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(' $face', style: const TextStyle(fontSize: 12)),
+        ],
+      );
+    });
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: bars
+            .map((w) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                  child: w,
+                ))
+            .toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // For non-desktop platforms we still constrain the UI to look pager-like.
@@ -236,7 +337,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                       ),
                     ),
 
-                    // Controls
+                    // Controls and breakdown
                     Expanded(
                       child: SingleChildScrollView(
                         child: Column(
@@ -450,14 +551,59 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 8),
+
+                            // Breakdown header and toggle
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Range: ${_diceCount * 1 + _modifier} — ${_diceCount * _sides + _modifier}'),
-                                Text('Preview: ${_diceCount}d$_sides ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
+                                const Text('Last roll', style: TextStyle(fontWeight: FontWeight.w600)),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      tooltip: _showBreakdown ? 'Hide breakdown' : 'Show breakdown',
+                                      onPressed: () {
+                                        setState(() {
+                                          _showBreakdown = !_showBreakdown;
+                                        });
+                                      },
+                                      icon: Icon(_showBreakdown ? Icons.expand_less : Icons.expand_more),
+                                    )
+                                  ],
+                                ),
                               ],
                             ),
+                            const SizedBox(height: 8),
+                            if (_showBreakdown)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // chips for each die and modifier
+                                  _breakdownChips(),
+                                  const SizedBox(height: 12),
+                                  // histogram
+                                  _breakdownHistogram(),
+                                  const SizedBox(height: 10),
+                                  // textual details
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Preview: ${_diceCount}d$_sides ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
+                                      Text('Range: ${_diceCount * 1 + _modifier} — ${_diceCount * _sides + _modifier}'),
+                                    ],
+                                  ),
+                                ],
+                              )
+                            else
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  _lastRolls.isNotEmpty
+                                      ? 'Result: ${_displayedNumber ?? 0}  —  Rolls: ${_lastRolls.join(", ")} ${_modifier != 0 ? " (modifier ${_modifier >= 0 ? "+$_modifier" : _modifier})" : ""}'
+                                      : 'No rolls yet',
+                                  style: const TextStyle(color: Colors.black54),
+                                ),
+                              ),
                           ],
                         ),
                       ),
