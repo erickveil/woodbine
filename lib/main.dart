@@ -80,7 +80,7 @@ class DiceRollerPage extends StatefulWidget {
 class _DiceRollerPageState extends State<DiceRollerPage> {
   final Random _rng = Random();
 
-  int _diceCount = 2;
+  int _diceCount = 1;
   int _sides = 6;
   int _modifier = 0;
 
