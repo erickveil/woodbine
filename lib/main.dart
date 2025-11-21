@@ -5,16 +5,21 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:window_size/window_size.dart' as window_size;
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Get the app version
+  final packageInfo = await PackageInfo.fromPlatform();
+  final version = packageInfo.version;
 
   // Fixed pager-like window size for desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     const double width = 420;
     const double minHeight = 680;
 
-    window_size.setWindowTitle('Dice Roller');
+    window_size.setWindowTitle('Woodbine v$version');
     final info = await window_size.getWindowInfo();
     if (info.screen != null) {
       final screenFrame = info.screen!.visibleFrame;
