@@ -12,21 +12,21 @@ void main() async {
   // Fixed pager-like window size for desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     const double width = 420;
-    const double height = 680;
+    const double minHeight = 680;
 
     window_size.setWindowTitle('Dice Roller');
     final info = await window_size.getWindowInfo();
     if (info.screen != null) {
       final screenFrame = info.screen!.visibleFrame;
       final left = screenFrame.left + (screenFrame.width - width) / 2;
-      final top = screenFrame.top + (screenFrame.height - height) / 2;
-      window_size.setWindowFrame(ui.Rect.fromLTWH(left, top, width, height));
-      window_size.setWindowMinSize(ui.Size(width, height));
-      window_size.setWindowMaxSize(ui.Size(width, height));
+      final top = screenFrame.top + (screenFrame.height - minHeight) / 2;
+      window_size.setWindowFrame(ui.Rect.fromLTWH(left, top, width, minHeight));
+      window_size.setWindowMinSize(ui.Size(width, minHeight));
+      window_size.setWindowMaxSize(ui.Size(width, screenFrame.height));
     } else {
       // If screen info isn't available, still set min/max size so window is fixed.
-      window_size.setWindowMinSize(ui.Size(width, height));
-      window_size.setWindowMaxSize(ui.Size(width, height));
+      window_size.setWindowMinSize(ui.Size(width, minHeight));
+      window_size.setWindowMaxSize(ui.Size(width, 2000));
     }
   }
 
@@ -483,13 +483,17 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   Widget build(BuildContext context) {
     // For non-desktop platforms we still constrain the UI to look pager-like.
     final double pageWidth = 420;
-    final double pageHeight = 680;
+    final double minPageHeight = 680;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints.tightFor(width: pageWidth, height: pageHeight),
+          constraints: BoxConstraints(
+            minWidth: pageWidth,
+            maxWidth: pageWidth,
+            minHeight: minPageHeight,
+          ),
           child: Card(
             margin: EdgeInsets.zero,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
