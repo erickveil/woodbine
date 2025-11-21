@@ -1,9 +1,35 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:window_size/window_size.dart' as window_size;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Fixed pager-like window size for desktop platforms
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    const double width = 420;
+    const double height = 680;
+
+    window_size.setWindowTitle('Dice Roller');
+    final info = await window_size.getWindowInfo();
+    if (info.screen != null) {
+      final screenFrame = info.screen!.visibleFrame;
+      final left = screenFrame.left + (screenFrame.width - width) / 2;
+      final top = screenFrame.top + (screenFrame.height - height) / 2;
+      window_size.setWindowFrame(ui.Rect.fromLTWH(left, top, width, height));
+      window_size.setWindowMinSize(ui.Size(width, height));
+      window_size.setWindowMaxSize(ui.Size(width, height));
+    } else {
+      // If screen info isn't available, still set min/max size so window is fixed.
+      window_size.setWindowMinSize(ui.Size(width, height));
+      window_size.setWindowMaxSize(ui.Size(width, height));
+    }
+  }
+
   runApp(const DiceRollerApp());
 }
 
@@ -182,122 +208,44 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Page-sized layout, centered column
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dice Roller'),
-      ),
-      body: LayoutBuilder(builder: (context, constraints) {
-        final bool narrow = constraints.maxWidth < 520;
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight - 40),
-            child: IntrinsicHeight(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  // Large number display
-                  SizedBox(
-                    height: narrow ? 190 : 240,
-                    child: Center(
-                      child: _bigNumberWidget(),
-                    ),
-                  ),
+    // For non-desktop platforms we still constrain the UI to look pager-like.
+    final double pageWidth = 420;
+    final double pageHeight = 680;
 
-                  // Controls
-                  Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          // Row of steppers or stacked
-                          narrow
-                              ? Column(
-                                  children: [
-                                    _numberStepper(
-                                      label: 'Dice',
-                                      value: _diceCount,
-                                      onDecrement: () {
-                                        setState(() {
-                                          _diceCount = max(_minDice, _diceCount - 1);
-                                          _displayedNumber = _diceCount + _modifier;
-                                        });
-                                      },
-                                      onIncrement: () {
-                                        setState(() {
-                                          _diceCount = min(_maxDice, _diceCount + 1);
-                                          _displayedNumber = _diceCount + _modifier;
-                                        });
-                                      },
-                                      semantics: 'Number of dice',
-                                    ),
-                                    const SizedBox(height: 12),
-                                    _numberStepper(
-                                      label: 'Sides',
-                                      value: _sides,
-                                      onDecrement: () {
-                                        setState(() {
-                                          _sides = max(_minSides, _sides - 1);
-                                          _displayedNumber = _diceCount + _modifier;
-                                        });
-                                      },
-                                      onIncrement: () {
-                                        setState(() {
-                                          _sides = min(_maxSides, _sides + 1);
-                                          _displayedNumber = _diceCount + _modifier;
-                                        });
-                                      },
-                                      semantics: 'Number of sides per die',
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Row(
-                                      children: [
-                                        const Expanded(
-                                          child: Text('Modifier'),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _modifier = max(_minModifier, _modifier - 1);
-                                              _displayedNumber = _diceCount + _modifier;
-                                            });
-                                          },
-                                          icon: const Icon(Icons.remove),
-                                        ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                          decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.black12),
-                                            borderRadius: BorderRadius.circular(8),
-                                            color: Colors.white,
-                                          ),
-                                          child: Text(
-                                            _modifier.toString(),
-                                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              _modifier = min(_maxModifier, _modifier + 1);
-                                              _displayedNumber = _diceCount + _modifier;
-                                            });
-                                          },
-                                          icon: const Icon(Icons.add),
-                                        ),
-                                      ],
-                                    )
-                                  ],
-                                )
-                              : Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: _numberStepper(
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: BoxConstraints.tightFor(width: pageWidth, height: pageHeight),
+          child: Card(
+            margin: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 6,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: LayoutBuilder(builder: (context, constraints) {
+                final bool narrow = constraints.maxWidth < 520;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Large number display
+                    SizedBox(
+                      height: narrow ? 160 : 200,
+                      child: Center(
+                        child: _bigNumberWidget(),
+                      ),
+                    ),
+
+                    // Controls
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Row of steppers or stacked
+                            narrow
+                                ? Column(
+                                    children: [
+                                      _numberStepper(
                                         label: 'Dice',
                                         value: _diceCount,
                                         onDecrement: () {
@@ -314,10 +262,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                         },
                                         semantics: 'Number of dice',
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _numberStepper(
+                                      const SizedBox(height: 12),
+                                      _numberStepper(
                                         label: 'Sides',
                                         value: _sides,
                                         onDecrement: () {
@@ -334,115 +280,198 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                         },
                                         semantics: 'Number of sides per die',
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                      const SizedBox(height: 12),
+                                      Row(
                                         children: [
-                                          const Text('Modifier'),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    _modifier = max(_minModifier, _modifier - 1);
-                                                    _displayedNumber = _diceCount + _modifier;
-                                                  });
-                                                },
-                                                icon: const Icon(Icons.remove_circle_outline),
-                                              ),
-                                              Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                                decoration: BoxDecoration(
-                                                  border: Border.all(color: Colors.black12),
-                                                  borderRadius: BorderRadius.circular(8),
-                                                  color: Colors.white,
-                                                ),
-                                                child: Text(
-                                                  _modifier.toString(),
-                                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                                                ),
-                                              ),
-                                              IconButton(
-                                                onPressed: () {
-                                                  setState(() {
-                                                    _modifier = min(_maxModifier, _modifier + 1);
-                                                    _displayedNumber = _diceCount + _modifier;
-                                                  });
-                                                },
-                                                icon: const Icon(Icons.add_circle_outline),
-                                              ),
-                                              const SizedBox(width: 8),
-                                              const Text(
-                                                'Add modifier to total',
-                                                style: TextStyle(color: Colors.black54),
-                                              ),
-                                            ],
+                                          Expanded(
+                                            child: Text('Modifier'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                _modifier = max(_minModifier, _modifier - 1);
+                                                _displayedNumber = _diceCount + _modifier;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.remove),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              border: Border.all(color: Colors.black12),
+                                              borderRadius: BorderRadius.circular(8),
+                                              color: Colors.white,
+                                            ),
+                                            child: Text(
+                                              _modifier.toString(),
+                                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                          IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                _modifier = min(_maxModifier, _modifier + 1);
+                                                _displayedNumber = _diceCount + _modifier;
+                                              });
+                                            },
+                                            icon: const Icon(Icons.add),
                                           ),
                                         ],
+                                      )
+                                    ],
+                                  )
+                                : Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Expanded(
+                                        child: _numberStepper(
+                                          label: 'Dice',
+                                          value: _diceCount,
+                                          onDecrement: () {
+                                            setState(() {
+                                              _diceCount = max(_minDice, _diceCount - 1);
+                                              _displayedNumber = _diceCount + _modifier;
+                                            });
+                                          },
+                                          onIncrement: () {
+                                            setState(() {
+                                              _diceCount = min(_maxDice, _diceCount + 1);
+                                              _displayedNumber = _diceCount + _modifier;
+                                            });
+                                          },
+                                          semantics: 'Number of dice',
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                          const SizedBox(height: 14),
-                          // quick presets for common dice sides
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 6,
-                            children: [4, 6, 8, 10, 12, 20, 100].map((preset) {
-                              return ChoiceChip(
-                                label: Text('d$preset'),
-                                selected: _sides == preset,
-                                onSelected: (sel) {
-                                  setState(() {
-                                    _sides = preset;
-                                    _displayedNumber = _diceCount + _modifier;
-                                  });
-                                },
-                              );
-                            }).toList(),
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: _isRolling ? null : _rollDice,
-                                  icon: const Icon(Icons.casino_outlined),
-                                  label: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 14.0),
-                                    child: Text(
-                                      _isRolling ? 'Rolling...' : 'Roll',
-                                      style: const TextStyle(fontSize: 18),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _numberStepper(
+                                          label: 'Sides',
+                                          value: _sides,
+                                          onDecrement: () {
+                                            setState(() {
+                                              _sides = max(_minSides, _sides - 1);
+                                              _displayedNumber = _diceCount + _modifier;
+                                            });
+                                          },
+                                          onIncrement: () {
+                                            setState(() {
+                                              _sides = min(_maxSides, _sides + 1);
+                                              _displayedNumber = _diceCount + _modifier;
+                                            });
+                                          },
+                                          semantics: 'Number of sides per die',
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Modifier'),
+                                            const SizedBox(height: 6),
+                                            Row(
+                                              children: [
+                                                IconButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _modifier = max(_minModifier, _modifier - 1);
+                                                      _displayedNumber = _diceCount + _modifier;
+                                                    });
+                                                  },
+                                                  icon: const Icon(Icons.remove_circle_outline),
+                                                ),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                                  decoration: BoxDecoration(
+                                                    border: Border.all(color: Colors.black12),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                    color: Colors.white,
+                                                  ),
+                                                  child: Text(
+                                                    _modifier.toString(),
+                                                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      _modifier = min(_maxModifier, _modifier + 1);
+                                                      _displayedNumber = _diceCount + _modifier;
+                                                    });
+                                                  },
+                                                  icon: const Icon(Icons.add_circle_outline),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                const Text(
+                                                  'Add modifier to total',
+                                                  style: TextStyle(color: Colors.black54),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            const SizedBox(height: 14),
+                            // quick presets for common dice sides
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 6,
+                              children: [4, 6, 8, 10, 12, 20, 100].map((preset) {
+                                return ChoiceChip(
+                                  label: Text('d$preset'),
+                                  selected: _sides == preset,
+                                  onSelected: (sel) {
+                                    setState(() {
+                                      _sides = preset;
+                                      _displayedNumber = _diceCount + _modifier;
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _isRolling ? null : _rollDice,
+                                    icon: const Icon(Icons.casino_outlined),
+                                    label: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 14.0),
+                                      child: Text(
+                                        _isRolling ? 'Rolling...' : 'Roll',
+                                        style: const TextStyle(fontSize: 18),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Range: ${_diceCount * 1 + _modifier} — ${_diceCount * _sides + _modifier}'),
-                              Text('Preview: ${_diceCount}d$_sides ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Range: ${_diceCount * 1 + _modifier} — ${_diceCount * _sides + _modifier}'),
+                                Text('Preview: ${_diceCount}d$_sides ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  // Footer / spacing
-                  const SizedBox(height: 8),
-                ],
-              ),
+                    // Footer / spacing
+                    const SizedBox(height: 8),
+                  ],
+                );
+              }),
             ),
           ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }
