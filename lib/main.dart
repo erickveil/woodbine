@@ -255,7 +255,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                                     const SizedBox(height: 12),
                                     Row(
                                       children: [
-                                        Expanded(
+                                        const Expanded(
                                           child: Text('Modifier'),
                                         ),
                                         const SizedBox(width: 8),
