@@ -7,6 +7,7 @@ import '../models/roll_record.dart';
 import '../widgets/big_number_display.dart';
 import '../widgets/dice_controls.dart';
 import '../widgets/roll_breakdown.dart';
+import '../widgets/roll_history_card.dart';
 
 class DiceRollerPage extends StatefulWidget {
   const DiceRollerPage({super.key});
@@ -220,74 +221,14 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, idx) {
         final r = _history[idx];
-        return Card(
-          elevation: 1,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Colors.deepPurple,
-                      child: Text(
-                        r.total.toString(),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        '${r.rolls.length}d${r.sides} ${r.modifier >= 0 ? "+${r.modifier}" : r.modifier}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Text(
-                      _formatUtcLocal(r.time),
-                      style: const TextStyle(color: Colors.black54, fontSize: 12),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      tooltip: 'Re-roll this entry',
-                      onPressed: _isRolling ? null : () => _rerollFromRecord(r),
-                      icon: const Icon(Icons.refresh),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                // show first N rolls as chips, collapse if too many
-                _buildRollsPreview(r.rolls, r.modifier, r.sides),
-              ],
-            ),
-          ),
+        return RollHistoryCard(
+          record: r,
+          isRolling: _isRolling,
+          onReroll: () => _rerollFromRecord(r),
+          formatDateTime: _formatUtcLocal,
         );
       },
     );
-  }
-
-  Widget _buildRollsPreview(List<int> rolls, int modifier, int sides) {
-    const int maxShown = 12;
-    if (rolls.length <= maxShown) {
-      return RollBreakdown(
-        rolls: rolls,
-        modifier: modifier,
-        sides: sides,
-        showHistogram: false,
-      );
-    } else {
-      final shown = rolls.sublist(0, maxShown);
-      final remaining = rolls.length - maxShown;
-      final chips = <Widget>[];
-      for (int i = 0; i < shown.length; i++) {
-        chips.add(Chip(label: Text('${shown[i]}'), backgroundColor: Colors.grey[100]));
-      }
-      chips.add(Chip(label: Text('… +$remaining more'), backgroundColor: Colors.grey[200]));
-      chips.add(Chip(label: Text('mod ${modifier >= 0 ? "+$modifier" : modifier}'), backgroundColor: Colors.grey[200]));
-      return Wrap(spacing: 8, runSpacing: 6, children: chips);
-    }
   }
 
   void _clearHistory() {
