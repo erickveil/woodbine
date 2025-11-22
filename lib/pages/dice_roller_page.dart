@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../models/roll_record.dart';
 import '../widgets/big_number_display.dart';
 import '../widgets/dice_controls.dart';
+import '../widgets/roll_breakdown.dart';
 
 class DiceRollerPage extends StatefulWidget {
   const DiceRollerPage({super.key});
@@ -197,98 +198,6 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _breakdownChipsFromRoll(List<int> rolls, int modifier) {
-    if (rolls.isEmpty) {
-      return const Text('No rolls yet', style: TextStyle(color: Colors.black54));
-    }
-
-    List<Widget> chips = [];
-    for (int i = 0; i < rolls.length; i++) {
-      chips.add(
-        Chip(
-          label: Text('${rolls[i]}', style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            )),
-          backgroundColor: Colors.grey[100],
-        ),
-      );
-    }
-
-    // modifier chip
-    chips.add(
-      Chip(
-        label: Text('modifier: ${modifier >= 0 ? "+$modifier" : modifier}'),
-        backgroundColor: Colors.grey[200],
-      ),
-    );
-
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: chips,
-    );
-  }
-
-  Widget _breakdownHistogramFromRoll(List<int> rolls, int faces) {
-    if (rolls.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final counts = List<int>.filled(faces + 1, 0); // index 1..faces
-    for (var v in rolls) {
-      if (v >= 1 && v <= faces) counts[v]++;
-    }
-    final int maxCount = counts.skip(1).fold(0, (p, e) => max(p, e));
-
-    final bars = List.generate(faces, (i) {
-      final face = i + 1;
-      final int c = counts[face];
-      final double fraction = maxCount == 0 ? 0 : c / maxCount;
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(c.toString(), style: const TextStyle(fontSize: 12)),
-          const SizedBox(height: 4),
-          Container(
-            width: 18,
-            height: 80,
-            alignment: Alignment.bottomCenter,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black12),
-              color: Colors.white,
-            ),
-            child: FractionallySizedBox(
-              heightFactor: fraction,
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(' $face', style: const TextStyle(fontSize: 12)),
-        ],
-      );
-    });
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: bars
-            .map((w) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6.0),
-                  child: w,
-                ))
-            .toList(),
-      ),
-    );
-  }
-
   String _formatUtcLocal(DateTime dt) {
     final local = dt.toLocal();
     // Simple formatting: YYYY-MM-DD HH:MM
@@ -350,7 +259,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                 ),
                 const SizedBox(height: 8),
                 // show first N rolls as chips, collapse if too many
-                _buildRollsPreview(r.rolls, r.modifier),
+                _buildRollsPreview(r.rolls, r.modifier, r.sides),
               ],
             ),
           ),
@@ -359,10 +268,15 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _buildRollsPreview(List<int> rolls, int modifier) {
+  Widget _buildRollsPreview(List<int> rolls, int modifier, int sides) {
     const int maxShown = 12;
     if (rolls.length <= maxShown) {
-      return _breakdownChipsFromRoll(rolls, modifier);
+      return RollBreakdown(
+        rolls: rolls,
+        modifier: modifier,
+        sides: sides,
+        showHistogram: false,
+      );
     } else {
       final shown = rolls.sublist(0, maxShown);
       final remaining = rolls.length - maxShown;
@@ -442,9 +356,11 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       children: [
         const Text('Most recent'),
         const SizedBox(height: 8),
-        _breakdownChipsFromRoll(_history.first.rolls, _history.first.modifier),
-        const SizedBox(height: 12),
-        _breakdownHistogramFromRoll(_history.first.rolls, _history.first.sides),
+        RollBreakdown(
+          rolls: _history.first.rolls,
+          modifier: _history.first.modifier,
+          sides: _history.first.sides,
+        ),
         const SizedBox(height: 12),
       ],
     );
