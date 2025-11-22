@@ -156,48 +156,6 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     setState(() => _isRolling = false);
   }
 
-  Widget _numberStepper({
-    required String label,
-    required int value,
-    required void Function() onDecrement,
-    required void Function() onIncrement,
-    required String semantics,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            IconButton(
-              onPressed: onDecrement,
-              icon: const Icon(Icons.remove_circle_outline),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                value.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-            IconButton(
-              onPressed: onIncrement,
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-            const SizedBox(width: 12),
-            Text(semantics, style: const TextStyle(color: Colors.black54)),
-          ],
-        ),
-      ],
-    );
-  }
-
   void _clearHistory() {
     setState(() {
       _history.clear();
@@ -231,11 +189,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // For non-desktop platforms we still constrain the UI to look pager-like.
-    final double pageWidth = 420;
-    final double minPageHeight = 680;
+  Widget _buildPageScaffold(Widget content) {
+    const double pageWidth = 420;
+    const double minPageHeight = 680;
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -252,107 +208,131 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
             elevation: 6,
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: LayoutBuilder(builder: (context, constraints) {
-                final bool narrow = constraints.maxWidth < 520;
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Large number display
-                    SizedBox(
-                      height: narrow ? 160 : 200,
-                      child: Center(
-                        child: BigNumberDisplay(
-                          displayedNumber: _displayedNumber,
-                          isRolling: _isRolling,
-                        ),
-                      ),
-                    ),
-
-                    // Controls and breakdown + history
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            DiceControls(
-                              diceCount: _diceCount,
-                              sides: _sides,
-                              modifier: _modifier,
-                              narrow: narrow,
-                              onDiceDecrement: () {
-                                setState(() {
-                                  _diceCount = max(_minDice, _diceCount - 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onDiceIncrement: () {
-                                setState(() {
-                                  _diceCount = min(_maxDice, _diceCount + 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onSidesDecrement: () {
-                                setState(() {
-                                  _sides = max(_minSides, _sides - 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onSidesIncrement: () {
-                                setState(() {
-                                  _sides = min(_maxSides, _sides + 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onModifierDecrement: () {
-                                setState(() {
-                                  _modifier = max(_minModifier, _modifier - 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onModifierIncrement: () {
-                                setState(() {
-                                  _modifier = min(_maxModifier, _modifier + 1);
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                              onPresetSelected: (preset) {
-                                setState(() {
-                                  _sides = preset;
-                                  _displayedNumber = _diceCount + _modifier;
-                                });
-                              },
-                            ),
-                            const SizedBox(height: 14),
-                            _buildRollButton(),
-                            const SizedBox(height: 8),
-                            RollHistoryList(
-                              history: _history,
-                              isRolling: _isRolling,
-                              showBreakdown: _showBreakdown,
-                              diceCount: _diceCount,
-                              sides: _sides,
-                              modifier: _modifier,
-                              onToggleBreakdown: () {
-                                setState(() {
-                                  _showBreakdown = !_showBreakdown;
-                                });
-                              },
-                              onClearHistory: _clearHistory,
-                              onReroll: _rerollFromRecord,
-                              formatDateTime: _formatUtcLocal,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Footer / spacing
-                    const SizedBox(height: 8),
-                  ],
-                );
-              }),
+              child: content,
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildNumberDisplay(bool narrow) {
+    return SizedBox(
+      height: narrow ? 160 : 200,
+      child: Center(
+        child: BigNumberDisplay(
+          displayedNumber: _displayedNumber,
+          isRolling: _isRolling,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDiceControls(bool narrow) {
+    return DiceControls(
+      diceCount: _diceCount,
+      sides: _sides,
+      modifier: _modifier,
+      narrow: narrow,
+      onDiceDecrement: () {
+        setState(() {
+          _diceCount = max(_minDice, _diceCount - 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onDiceIncrement: () {
+        setState(() {
+          _diceCount = min(_maxDice, _diceCount + 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onSidesDecrement: () {
+        setState(() {
+          _sides = max(_minSides, _sides - 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onSidesIncrement: () {
+        setState(() {
+          _sides = min(_maxSides, _sides + 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onModifierDecrement: () {
+        setState(() {
+          _modifier = max(_minModifier, _modifier - 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onModifierIncrement: () {
+        setState(() {
+          _modifier = min(_maxModifier, _modifier + 1);
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onPresetSelected: (preset) {
+        setState(() {
+          _sides = preset;
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+    );
+  }
+
+  Widget _buildHistoryList() {
+    return RollHistoryList(
+      history: _history,
+      isRolling: _isRolling,
+      showBreakdown: _showBreakdown,
+      diceCount: _diceCount,
+      sides: _sides,
+      modifier: _modifier,
+      onToggleBreakdown: () {
+        setState(() {
+          _showBreakdown = !_showBreakdown;
+        });
+      },
+      onClearHistory: _clearHistory,
+      onReroll: _rerollFromRecord,
+      formatDateTime: _formatUtcLocal,
+    );
+  }
+
+  Widget _buildControlsSection(bool narrow) {
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildDiceControls(narrow),
+            const SizedBox(height: 14),
+            _buildRollButton(),
+            const SizedBox(height: 8),
+            _buildHistoryList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent(bool narrow) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildNumberDisplay(narrow),
+        _buildControlsSection(narrow),
+        const SizedBox(height: 8),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _buildPageScaffold(
+      LayoutBuilder(
+        builder: (context, constraints) {
+          final bool narrow = constraints.maxWidth < 520;
+          return _buildMainContent(narrow);
+        },
       ),
     );
   }
