@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../models/roll_record.dart';
+import '../widgets/dice_controls.dart';
 
 class DiceRollerPage extends StatefulWidget {
   const DiceRollerPage({super.key});
@@ -422,200 +423,6 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     });
   }
 
-  Widget _buildControls(bool narrow) {
-    return narrow
-        ? Column(
-            children: [
-              _numberStepper(
-                label: 'Dice',
-                value: _diceCount,
-                onDecrement: () {
-                  setState(() {
-                    _diceCount = max(_minDice, _diceCount - 1);
-                    _displayedNumber = _diceCount + _modifier;
-                  });
-                },
-                onIncrement: () {
-                  setState(() {
-                    _diceCount = min(_maxDice, _diceCount + 1);
-                    _displayedNumber = _diceCount + _modifier;
-                  });
-                },
-                semantics: 'Number of dice',
-              ),
-              const SizedBox(height: 12),
-              _numberStepper(
-                label: 'Sides',
-                value: _sides,
-                onDecrement: () {
-                  setState(() {
-                    _sides = max(_minSides, _sides - 1);
-                    _displayedNumber = _diceCount + _modifier;
-                  });
-                },
-                onIncrement: () {
-                  setState(() {
-                    _sides = min(_maxSides, _sides + 1);
-                    _displayedNumber = _diceCount + _modifier;
-                  });
-                },
-                semantics: 'Number of sides per die',
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text('Modifier'),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _modifier = max(_minModifier, _modifier - 1);
-                        _displayedNumber = _diceCount + _modifier;
-                      });
-                    },
-                    icon: const Icon(Icons.remove),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black12),
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.white,
-                    ),
-                    child: Text(
-                      _modifier.toString(),
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _modifier = min(_maxModifier, _modifier + 1);
-                        _displayedNumber = _diceCount + _modifier;
-                      });
-                    },
-                    icon: const Icon(Icons.add),
-                  ),
-                ],
-              )
-            ],
-          )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _numberStepper(
-                  label: 'Dice',
-                  value: _diceCount,
-                  onDecrement: () {
-                    setState(() {
-                      _diceCount = max(_minDice, _diceCount - 1);
-                      _displayedNumber = _diceCount + _modifier;
-                    });
-                  },
-                  onIncrement: () {
-                    setState(() {
-                      _diceCount = min(_maxDice, _diceCount + 1);
-                      _displayedNumber = _diceCount + _modifier;
-                    });
-                  },
-                  semantics: 'Number of dice',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _numberStepper(
-                  label: 'Sides',
-                  value: _sides,
-                  onDecrement: () {
-                    setState(() {
-                      _sides = max(_minSides, _sides - 1);
-                      _displayedNumber = _diceCount + _modifier;
-                    });
-                  },
-                  onIncrement: () {
-                    setState(() {
-                      _sides = min(_maxSides, _sides + 1);
-                      _displayedNumber = _diceCount + _modifier;
-                    });
-                  },
-                  semantics: 'Number of sides per die',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Modifier'),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _modifier = max(_minModifier, _modifier - 1);
-                              _displayedNumber = _diceCount + _modifier;
-                            });
-                          },
-                          icon: const Icon(Icons.remove_circle_outline),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black12),
-                            borderRadius: BorderRadius.circular(8),
-                            color: Colors.white,
-                          ),
-                          child: Text(
-                            _modifier.toString(),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _modifier = min(_maxModifier, _modifier + 1);
-                              _displayedNumber = _diceCount + _modifier;
-                            });
-                          },
-                          icon: const Icon(Icons.add_circle_outline),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Add modifier to total',
-                          style: TextStyle(color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-  }
-
-  Widget _buildPresetChips() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      children: [4, 6, 8, 10, 12, 20, 100].map((preset) {
-        return ChoiceChip(
-          label: Text('d$preset'),
-          selected: _sides == preset,
-          onSelected: (sel) {
-            setState(() {
-              _sides = preset;
-              _displayedNumber = _diceCount + _modifier;
-            });
-          },
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildRollButton() {
     return Row(
       children: [
@@ -774,9 +581,54 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                       child: SingleChildScrollView(
                         child: Column(
                           children: [
-                            _buildControls(narrow),
-                            const SizedBox(height: 14),
-                            _buildPresetChips(),
+                            DiceControls(
+                              diceCount: _diceCount,
+                              sides: _sides,
+                              modifier: _modifier,
+                              narrow: narrow,
+                              onDiceDecrement: () {
+                                setState(() {
+                                  _diceCount = max(_minDice, _diceCount - 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onDiceIncrement: () {
+                                setState(() {
+                                  _diceCount = min(_maxDice, _diceCount + 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onSidesDecrement: () {
+                                setState(() {
+                                  _sides = max(_minSides, _sides - 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onSidesIncrement: () {
+                                setState(() {
+                                  _sides = min(_maxSides, _sides + 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onModifierDecrement: () {
+                                setState(() {
+                                  _modifier = max(_minModifier, _modifier - 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onModifierIncrement: () {
+                                setState(() {
+                                  _modifier = min(_maxModifier, _modifier + 1);
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                              onPresetSelected: (preset) {
+                                setState(() {
+                                  _sides = preset;
+                                  _displayedNumber = _diceCount + _modifier;
+                                });
+                              },
+                            ),
                             const SizedBox(height: 14),
                             _buildRollButton(),
                             const SizedBox(height: 8),
