@@ -194,7 +194,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     const double minPageHeight = 680;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.transparent,
       body: Center(
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -206,6 +206,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
             margin: EdgeInsets.zero,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 6,
+            color: Colors.transparent, 
+            //color: Colors.white.withOpacity(0.6),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: content,

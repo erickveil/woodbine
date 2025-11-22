@@ -12,7 +12,17 @@ class DiceRollerApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const DiceRollerPage(),
+      home: Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFFD2B48C), // tan background color
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.jpg'),
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        child: const DiceRollerPage(),
+      ),
     );
   }
 }
