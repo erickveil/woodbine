@@ -102,7 +102,10 @@ class DiceControls extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label),
+        Padding(
+          padding: const EdgeInsets.only(left: 5),
+          child: Text(label),
+        ),
         const SizedBox(height: 6),
         Row(
           children: [
@@ -138,7 +141,10 @@ class DiceControls extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text('Modifier'),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 5),
+            child: Text('Modifier'),
+          ),
         ),
         const SizedBox(width: 8),
         IconButton(
@@ -169,7 +175,10 @@ class DiceControls extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Modifier'),
+        const Padding(
+          padding: EdgeInsets.only(left: 5),
+          child: Text('Modifier'),
+        ),
         const SizedBox(height: 6),
         Row(
           children: [

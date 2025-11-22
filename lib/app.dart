@@ -14,7 +14,7 @@ class DiceRollerApp extends StatelessWidget {
       ),
       home: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFFD2B48C), // tan background color
+          color: Color(0xFFEEEEEE), // light gray background color
           image: DecorationImage(
             image: AssetImage('assets/images/background.jpg'),
             fit: BoxFit.fitWidth,

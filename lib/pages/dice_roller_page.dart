@@ -303,13 +303,30 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   Widget _buildControlsSection(bool narrow) {
     return Expanded(
       child: SingleChildScrollView(
-        child: Column(
+        child: Stack(
           children: [
-            _buildDiceControls(narrow),
-            const SizedBox(height: 14),
-            _buildRollButton(),
-            const SizedBox(height: 8),
-            _buildHistoryList(),
+            // Background image that extends to full window width
+            Positioned.fill(
+              child: Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/controls_background.jpg'),
+                    fit: BoxFit.fitWidth,
+                    alignment: Alignment.topCenter,
+                  ),
+                ),
+              ),
+            ),
+            // Content on top
+            Column(
+              children: [
+                _buildDiceControls(narrow),
+                const SizedBox(height: 14),
+                _buildRollButton(),
+                const SizedBox(height: 8),
+                _buildHistoryList(),
+              ],
+            ),
           ],
         ),
       ),
