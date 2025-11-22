@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'pages/dice_roller_page.dart';
 
 class DiceRollerApp extends StatelessWidget {
   const DiceRollerApp({super.key});
