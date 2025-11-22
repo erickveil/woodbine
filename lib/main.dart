@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import 'package:package_info_plus/package_info_plus.dart';
 
+import 'app.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -36,22 +38,6 @@ void main() async {
   }
 
   runApp(const DiceRollerApp());
-}
-
-class DiceRollerApp extends StatelessWidget {
-  const DiceRollerApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dice Roller',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const DiceRollerPage(),
-    );
-  }
 }
 
 class RollRecord {
