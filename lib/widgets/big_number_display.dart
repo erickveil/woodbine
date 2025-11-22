@@ -45,7 +45,10 @@ class BigNumberDisplay extends StatelessWidget {
                 ? [
                     const Shadow(blurRadius: 24, color: Colors.deepPurpleAccent),
                   ]
-                : null,
+                : [
+                    const Shadow(blurRadius: 8, color: Colors.white),
+                    const Shadow(blurRadius: 16, color: Colors.white),
+                  ],
           ),
           textAlign: TextAlign.center,
         ),
