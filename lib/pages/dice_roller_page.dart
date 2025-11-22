@@ -6,8 +6,7 @@ import 'package:flutter/material.dart';
 import '../models/roll_record.dart';
 import '../widgets/big_number_display.dart';
 import '../widgets/dice_controls.dart';
-import '../widgets/roll_breakdown.dart';
-import '../widgets/roll_history_card.dart';
+import '../widgets/roll_history_list.dart';
 
 class DiceRollerPage extends StatefulWidget {
   const DiceRollerPage({super.key});
@@ -199,38 +198,6 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  String _formatUtcLocal(DateTime dt) {
-    final local = dt.toLocal();
-    // Simple formatting: YYYY-MM-DD HH:MM
-    String two(int n) => n.toString().padLeft(2, '0');
-    return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
-  }
-
-  Widget _historyList() {
-    if (_history.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12.0),
-        child: Text('No history yet', style: TextStyle(color: Colors.black54)),
-      );
-    }
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: _history.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
-      itemBuilder: (context, idx) {
-        final r = _history[idx];
-        return RollHistoryCard(
-          record: r,
-          isRolling: _isRolling,
-          onReroll: () => _rerollFromRecord(r),
-          formatDateTime: _formatUtcLocal,
-        );
-      },
-    );
-  }
-
   void _clearHistory() {
     setState(() {
       _history.clear();
@@ -257,105 +224,11 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     );
   }
 
-  Widget _buildBreakdownHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text('Last roll & history', style: TextStyle(fontWeight: FontWeight.w600)),
-        Row(
-          children: [
-            IconButton(
-              tooltip: _showBreakdown ? 'Hide breakdown' : 'Show breakdown',
-              onPressed: () {
-                setState(() {
-                  _showBreakdown = !_showBreakdown;
-                });
-              },
-              icon: Icon(_showBreakdown ? Icons.expand_less : Icons.expand_more),
-            ),
-            IconButton(
-              tooltip: 'Clear history',
-              onPressed: _history.isEmpty ? null : _clearHistory,
-              icon: const Icon(Icons.delete_outline),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMostRecentRoll() {
-    if (_history.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.0),
-        child: Text('No rolls yet', style: TextStyle(color: Colors.black54)),
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Most recent'),
-        const SizedBox(height: 8),
-        RollBreakdown(
-          rolls: _history.first.rolls,
-          modifier: _history.first.modifier,
-          sides: _history.first.sides,
-        ),
-        const SizedBox(height: 12),
-      ],
-    );
-  }
-
-  Widget _buildHistorySection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('History', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('${_history.length} entries', style: const TextStyle(color: Colors.black54)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        _historyList(),
-        const SizedBox(height: 8),
-        _buildPreviewFooter(),
-      ],
-    );
-  }
-
-  Widget _buildPreviewFooter() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('Preview: ${_diceCount}d$_sides ${_modifier >= 0 ? "+$_modifier" : _modifier}'),
-        Text('Range: ${_diceCount * 1 + _modifier} — ${_diceCount * _sides + _modifier}'),
-      ],
-    );
-  }
-
-  Widget _buildBreakdownContent() {
-    if (_showBreakdown) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildMostRecentRoll(),
-          _buildHistorySection(),
-        ],
-      );
-    } else {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Text(
-          _history.isNotEmpty
-              ? 'Latest: ${_history.first.total}  —  Rolls: ${_history.first.rolls.join(", ")} ${_history.first.modifier != 0 ? " (modifier ${_history.first.modifier >= 0 ? "+${_history.first.modifier}" : _history.first.modifier})" : ""}'
-              : 'No rolls yet',
-          style: const TextStyle(color: Colors.black54),
-        ),
-      );
-    }
+  String _formatUtcLocal(DateTime dt) {
+    final local = dt.toLocal();
+    // Simple formatting: YYYY-MM-DD HH:MM
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${local.year}-${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
   }
 
   @override
@@ -451,9 +324,22 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                             const SizedBox(height: 14),
                             _buildRollButton(),
                             const SizedBox(height: 8),
-                            _buildBreakdownHeader(),
-                            const SizedBox(height: 8),
-                            _buildBreakdownContent(),
+                            RollHistoryList(
+                              history: _history,
+                              isRolling: _isRolling,
+                              showBreakdown: _showBreakdown,
+                              diceCount: _diceCount,
+                              sides: _sides,
+                              modifier: _modifier,
+                              onToggleBreakdown: () {
+                                setState(() {
+                                  _showBreakdown = !_showBreakdown;
+                                });
+                              },
+                              onClearHistory: _clearHistory,
+                              onReroll: _rerollFromRecord,
+                              formatDateTime: _formatUtcLocal,
+                            ),
                           ],
                         ),
                       ),
