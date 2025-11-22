@@ -8,6 +8,7 @@ import 'package:window_size/window_size.dart' as window_size;
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'app.dart';
+import 'models/roll_record.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,22 +39,6 @@ void main() async {
   }
 
   runApp(const DiceRollerApp());
-}
-
-class RollRecord {
-  final DateTime time;
-  final List<int> rolls;
-  final int modifier;
-  final int total;
-  final int sides;
-
-  RollRecord({
-    required this.time,
-    required this.rolls,
-    required this.modifier,
-    required this.total,
-    required this.sides,
-  });
 }
 
 class DiceRollerPage extends StatefulWidget {
