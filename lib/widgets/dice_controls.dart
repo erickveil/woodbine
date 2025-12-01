@@ -146,11 +146,11 @@ class DiceControls extends StatelessWidget {
   Widget _buildModifierControlNarrow() {
     return Row(
       children: [
-        SizedBox(
+        const SizedBox(
           width: _labelWidth,
           child: Text(
             'Modifier',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -183,11 +183,11 @@ class DiceControls extends StatelessWidget {
   Widget _buildModifierControlWide() {
     return Row(
       children: [
-        SizedBox(
+        const SizedBox(
           width: _labelWidth,
           child: Text(
             'Modifier',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
