@@ -9,7 +9,7 @@ class DiceRollerApp extends StatelessWidget {
     return MaterialApp(
       title: 'Woodbine',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 51, 44, 21)),
         useMaterial3: true,
       ),
       home: Container(
