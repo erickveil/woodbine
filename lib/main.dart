@@ -26,12 +26,12 @@ void main() async {
       final left = screenFrame.left + (screenFrame.width - width) / 2;
       final top = screenFrame.top + (screenFrame.height - minHeight) / 2;
       window_size.setWindowFrame(ui.Rect.fromLTWH(left, top, width, minHeight));
-      window_size.setWindowMinSize(ui.Size(width, minHeight));
+      window_size.setWindowMinSize(const ui.Size(width, minHeight));
       window_size.setWindowMaxSize(ui.Size(width, screenFrame.height));
     } else {
       // If screen info isn't available, still set min/max size so window is fixed.
-      window_size.setWindowMinSize(ui.Size(width, minHeight));
-      window_size.setWindowMaxSize(ui.Size(width, 2000));
+      window_size.setWindowMinSize(const ui.Size(width, minHeight));
+      window_size.setWindowMaxSize(const ui.Size(width, 2000));
     }
   }
 

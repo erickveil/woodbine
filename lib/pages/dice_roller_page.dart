@@ -197,7 +197,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       backgroundColor: Colors.transparent,
       body: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             minWidth: pageWidth,
             maxWidth: pageWidth,
             minHeight: minPageHeight,

@@ -140,9 +140,9 @@ class DiceControls extends StatelessWidget {
   Widget _buildModifierControlNarrow() {
     return Row(
       children: [
-        Expanded(
+        const Expanded(
           child: Padding(
-            padding: const EdgeInsets.only(left: 5),
+            padding: EdgeInsets.only(left: 5),
             child: Text('Modifier'),
           ),
         ),
