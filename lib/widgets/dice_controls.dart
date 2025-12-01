@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class DiceControls extends StatelessWidget {
+  static const double _labelWidth = 100;
+  
   final int diceCount;
   final int sides;
   final int modifier;
@@ -43,6 +45,7 @@ class DiceControls extends StatelessWidget {
     return narrow
         ? Column(
             children: [
+              const SizedBox(height: 10),
               _numberStepper(
                 label: 'Dice',
                 value: diceCount,
@@ -62,31 +65,36 @@ class DiceControls extends StatelessWidget {
               _buildModifierControlNarrow(),
             ],
           )
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        : Column(
             children: [
-              Expanded(
-                child: _numberStepper(
-                  label: 'Dice',
-                  value: diceCount,
-                  onDecrement: onDiceDecrement,
-                  onIncrement: onDiceIncrement,
-                  semantics: 'Number of dice',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _numberStepper(
-                  label: 'Sides',
-                  value: sides,
-                  onDecrement: onSidesDecrement,
-                  onIncrement: onSidesIncrement,
-                  semantics: 'Number of sides per die',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildModifierControlWide(),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _numberStepper(
+                      label: 'Dice',
+                      value: diceCount,
+                      onDecrement: onDiceDecrement,
+                      onIncrement: onDiceIncrement,
+                      semantics: 'Number of dice',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _numberStepper(
+                      label: 'Sides',
+                      value: sides,
+                      onDecrement: onSidesDecrement,
+                      onIncrement: onSidesIncrement,
+                      semantics: 'Number of sides per die',
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildModifierControlWide(),
+                  ),
+                ],
               ),
             ],
           );
@@ -99,39 +107,37 @@ class DiceControls extends StatelessWidget {
     required VoidCallback onIncrement,
     required String semantics,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 5),
-          child: Text(label),
+        SizedBox(
+          width: _labelWidth,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            IconButton(
-              onPressed: onDecrement,
-              icon: const Icon(Icons.remove_circle_outline),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                value.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-            IconButton(
-              onPressed: onIncrement,
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-            const SizedBox(width: 12),
-            Text(semantics, style: const TextStyle(color: Colors.black54)),
-          ],
+        IconButton(
+          onPressed: onDecrement,
+          icon: const Icon(Icons.remove_circle_outline),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: Text(
+            value.toString(),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+        ),
+        IconButton(
+          onPressed: onIncrement,
+          icon: const Icon(Icons.add_circle_outline),
         ),
       ],
     );
@@ -140,16 +146,19 @@ class DiceControls extends StatelessWidget {
   Widget _buildModifierControlNarrow() {
     return Row(
       children: [
-        const Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(left: 5),
-            child: Text('Modifier'),
+        SizedBox(
+          width: _labelWidth,
+          child: Text(
+            'Modifier',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
-        const SizedBox(width: 8),
         IconButton(
           onPressed: onModifierDecrement,
-          icon: const Icon(Icons.remove),
+          icon: const Icon(Icons.remove_circle_outline),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -165,49 +174,44 @@ class DiceControls extends StatelessWidget {
         ),
         IconButton(
           onPressed: onModifierIncrement,
-          icon: const Icon(Icons.add),
+          icon: const Icon(Icons.add_circle_outline),
         ),
       ],
     );
   }
 
   Widget _buildModifierControlWide() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        const Padding(
-          padding: EdgeInsets.only(left: 5),
-          child: Text('Modifier'),
+        SizedBox(
+          width: _labelWidth,
+          child: Text(
+            'Modifier',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            IconButton(
-              onPressed: onModifierDecrement,
-              icon: const Icon(Icons.remove_circle_outline),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                modifier.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ),
-            IconButton(
-              onPressed: onModifierIncrement,
-              icon: const Icon(Icons.add_circle_outline),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Add modifier to total',
-              style: TextStyle(color: Colors.black54),
-            ),
-          ],
+        IconButton(
+          onPressed: onModifierDecrement,
+          icon: const Icon(Icons.remove_circle_outline),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.black12),
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: Text(
+            modifier.toString(),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+        ),
+        IconButton(
+          onPressed: onModifierIncrement,
+          icon: const Icon(Icons.add_circle_outline),
         ),
       ],
     );
