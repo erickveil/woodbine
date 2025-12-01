@@ -305,6 +305,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       child: SingleChildScrollView(
         child: Stack(
           children: [
+          /*
             // Background image that extends to full window width
             Positioned.fill(
               child: Container(
@@ -317,6 +318,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
                 ),
               ),
             ),
+            */
             // Content on top
             Column(
               children: [
