@@ -107,113 +107,134 @@ class DiceControls extends StatelessWidget {
     required VoidCallback onIncrement,
     required String semantics,
   }) {
-    return Row(
-      children: [
-        SizedBox(
-          width: _labelWidth,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            SizedBox(
+              width: _labelWidth,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              onPressed: onDecrement,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black12),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Text(
+                value.toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+            IconButton(
+              onPressed: onIncrement,
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
-        IconButton(
-          onPressed: onDecrement,
-          icon: const Icon(Icons.remove_circle_outline),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-          ),
-          child: Text(
-            value.toString(),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-        ),
-        IconButton(
-          onPressed: onIncrement,
-          icon: const Icon(Icons.add_circle_outline),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildModifierControlNarrow() {
-    return Row(
-      children: [
-        const SizedBox(
-          width: _labelWidth,
-          child: Text(
-            'Modifier',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Modifier',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              onPressed: onModifierDecrement,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black12),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Text(
+                modifier.toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+            IconButton(
+              onPressed: onModifierIncrement,
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
-        IconButton(
-          onPressed: onModifierDecrement,
-          icon: const Icon(Icons.remove_circle_outline),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-          ),
-          child: Text(
-            modifier.toString(),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-        ),
-        IconButton(
-          onPressed: onModifierIncrement,
-          icon: const Icon(Icons.add_circle_outline),
-        ),
-      ],
+      ),
     );
   }
 
   Widget _buildModifierControlWide() {
-    return Row(
-      children: [
-        const SizedBox(
-          width: _labelWidth,
-          child: Text(
-            'Modifier',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Modifier',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
+            IconButton(
+              onPressed: onModifierDecrement,
+              icon: const Icon(Icons.remove_circle_outline),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black12),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Text(
+                modifier.toString(),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+            ),
+            IconButton(
+              onPressed: onModifierIncrement,
+              icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
         ),
-        IconButton(
-          onPressed: onModifierDecrement,
-          icon: const Icon(Icons.remove_circle_outline),
-        ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black12),
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-          ),
-          child: Text(
-            modifier.toString(),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-          ),
-        ),
-        IconButton(
-          onPressed: onModifierIncrement,
-          icon: const Icon(Icons.add_circle_outline),
-        ),
-      ],
+      ),
     );
   }
 
