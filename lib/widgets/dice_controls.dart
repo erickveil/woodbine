@@ -13,6 +13,9 @@ class DiceControls extends StatelessWidget {
   final VoidCallback onModifierDecrement;
   final VoidCallback onModifierIncrement;
   final ValueChanged<int> onPresetSelected;
+  final ValueChanged<int> onDiceChanged;
+  final ValueChanged<int> onSidesChanged;
+  final ValueChanged<int> onModifierChanged;
   final bool narrow;
 
   const DiceControls({
@@ -27,6 +30,9 @@ class DiceControls extends StatelessWidget {
     required this.onModifierDecrement,
     required this.onModifierIncrement,
     required this.onPresetSelected,
+    required this.onDiceChanged,
+    required this.onSidesChanged,
+    required this.onModifierChanged,
     this.narrow = false,
   });
 
@@ -34,35 +40,39 @@ class DiceControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildSteppers(),
+        _buildSteppers(context),
         const SizedBox(height: 14),
         _buildPresetChips(),
       ],
     );
   }
 
-  Widget _buildSteppers() {
+  Widget _buildSteppers(BuildContext context) {
     return narrow
         ? Column(
             children: [
               const SizedBox(height: 10),
               _numberStepper(
+                context: context,
                 label: 'Dice',
                 value: diceCount,
                 onDecrement: onDiceDecrement,
                 onIncrement: onDiceIncrement,
+                onDirectInput: onDiceChanged,
                 semantics: 'Number of dice',
               ),
               const SizedBox(height: 12),
               _numberStepper(
+                context: context,
                 label: 'Sides',
                 value: sides,
                 onDecrement: onSidesDecrement,
                 onIncrement: onSidesIncrement,
+                onDirectInput: onSidesChanged,
                 semantics: 'Number of sides per die',
               ),
               const SizedBox(height: 12),
-              _buildModifierControlNarrow(),
+              _buildModifierControlNarrow(context),
             ],
           )
         : Column(
@@ -73,26 +83,30 @@ class DiceControls extends StatelessWidget {
                 children: [
                   Expanded(
                     child: _numberStepper(
+                      context: context,
                       label: 'Dice',
                       value: diceCount,
                       onDecrement: onDiceDecrement,
                       onIncrement: onDiceIncrement,
+                      onDirectInput: onDiceChanged,
                       semantics: 'Number of dice',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: _numberStepper(
+                      context: context,
                       label: 'Sides',
                       value: sides,
                       onDecrement: onSidesDecrement,
                       onIncrement: onSidesIncrement,
+                      onDirectInput: onSidesChanged,
                       semantics: 'Number of sides per die',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildModifierControlWide(),
+                    child: _buildModifierControlWide(context),
                   ),
                 ],
               ),
@@ -101,10 +115,12 @@ class DiceControls extends StatelessWidget {
   }
 
   Widget _numberStepper({
+    required BuildContext context,
     required String label,
     required int value,
     required VoidCallback onDecrement,
     required VoidCallback onIncrement,
+    required ValueChanged<int> onDirectInput,
     required String semantics,
   }) {
     return Card(
@@ -128,16 +144,19 @@ class DiceControls extends StatelessWidget {
               onPressed: onDecrement,
               icon: const Icon(Icons.remove_circle_outline),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                value.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            GestureDetector(
+              onTap: () => _showInputDialog(context, label, value, onDirectInput),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                ),
+                child: Text(
+                  value.toString(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
             IconButton(
@@ -150,7 +169,7 @@ class DiceControls extends StatelessWidget {
     );
   }
 
-  Widget _buildModifierControlNarrow() {
+  Widget _buildModifierControlNarrow(BuildContext context) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -172,16 +191,19 @@ class DiceControls extends StatelessWidget {
               onPressed: onModifierDecrement,
               icon: const Icon(Icons.remove_circle_outline),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                modifier.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            GestureDetector(
+              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                ),
+                child: Text(
+                  modifier.toString(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
             IconButton(
@@ -194,7 +216,7 @@ class DiceControls extends StatelessWidget {
     );
   }
 
-  Widget _buildModifierControlWide() {
+  Widget _buildModifierControlWide(BuildContext context) {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -216,16 +238,19 @@ class DiceControls extends StatelessWidget {
               onPressed: onModifierDecrement,
               icon: const Icon(Icons.remove_circle_outline),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black12),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                modifier.toString(),
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+            GestureDetector(
+              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black12),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                ),
+                child: Text(
+                  modifier.toString(),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
               ),
             ),
             IconButton(
@@ -249,6 +274,42 @@ class DiceControls extends StatelessWidget {
           onSelected: (sel) => onPresetSelected(preset),
         );
       }).toList(),
+    );
+  }
+
+  void _showInputDialog(BuildContext context, String label, int currentValue, ValueChanged<int> onSubmit) {
+    final controller = TextEditingController(text: currentValue.toString());
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Enter $label'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: currentValue.toString(),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final value = int.tryParse(controller.text);
+              if (value != null && value > 0) {
+                onSubmit(value);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      ),
     );
   }
 }

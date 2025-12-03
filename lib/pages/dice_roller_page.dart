@@ -278,6 +278,24 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
           _displayedNumber = _diceCount + _modifier;
         });
       },
+      onDiceChanged: (value) {
+        setState(() {
+          _diceCount = max(_minDice, min(_maxDice, value));
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onSidesChanged: (value) {
+        setState(() {
+          _sides = max(_minSides, min(_maxSides, value));
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onModifierChanged: (value) {
+        setState(() {
+          _modifier = max(_minModifier, min(_maxModifier, value));
+          _displayedNumber = _diceCount + _modifier;
+        });
+      },
     );
   }
 
