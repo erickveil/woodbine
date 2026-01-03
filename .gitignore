@@ -47,3 +47,10 @@ android/key.properties
 
 settings.json
 
+# Node.js build dependencies
+/node_modules/
+package-lock.json
+
+# Build deploy directory
+/deploy/
+
