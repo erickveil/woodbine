@@ -192,7 +192,7 @@ class DiceControls extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
             ),
             GestureDetector(
-              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged),
+              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged, allowNegative: true),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
@@ -239,7 +239,7 @@ class DiceControls extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
             ),
             GestureDetector(
-              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged),
+              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged, allowNegative: true),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
@@ -277,7 +277,13 @@ class DiceControls extends StatelessWidget {
     );
   }
 
-  void _showInputDialog(BuildContext context, String label, int currentValue, ValueChanged<int> onSubmit) {
+  void _showInputDialog(
+    BuildContext context, 
+    String label, 
+    int currentValue, 
+    ValueChanged<int> onSubmit, {
+    bool allowNegative = false,
+  }) {
     final controller = TextEditingController(text: currentValue.toString());
     
     showDialog(
@@ -286,7 +292,7 @@ class DiceControls extends StatelessWidget {
         title: Text('Enter $label'),
         content: TextField(
           controller: controller,
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(signed: true),
           autofocus: true,
           decoration: InputDecoration(
             hintText: currentValue.toString(),
@@ -301,7 +307,8 @@ class DiceControls extends StatelessWidget {
           TextButton(
             onPressed: () {
               final value = int.tryParse(controller.text);
-              if (value != null && value > 0) {
+              final isValid = value != null && (allowNegative || value > 0);
+              if (isValid) {
                 onSubmit(value);
                 Navigator.pop(context);
               }
