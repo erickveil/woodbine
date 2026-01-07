@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class BigNumberDisplay extends StatelessWidget {
+class BigNumberDisplay extends StatefulWidget {
   final int? displayedNumber;
   final bool isRolling;
   final int? minPossible;
@@ -15,17 +15,84 @@ class BigNumberDisplay extends StatelessWidget {
   });
 
   @override
+  State<BigNumberDisplay> createState() => _BigNumberDisplayState();
+}
+
+class _BigNumberDisplayState extends State<BigNumberDisplay> {
+  bool _isFlashing = false;
+  bool _isMaxCrit = false;
+
+  @override
+  void didUpdateWidget(BigNumberDisplay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Detect when we transition from rolling to not rolling with a crit
+    if (oldWidget.isRolling && !widget.isRolling) {
+      final displayedNumber = widget.displayedNumber;
+      final minPossible = widget.minPossible;
+      final maxPossible = widget.maxPossible;
+      
+      if (displayedNumber != null && minPossible != null && maxPossible != null) {
+        if (displayedNumber == maxPossible || displayedNumber == minPossible) {
+          setState(() {
+            _isFlashing = true;
+            _isMaxCrit = displayedNumber == maxPossible;
+          });
+          
+          // Stop flashing after a brief moment
+          Future.delayed(const Duration(milliseconds: 600), () {
+            if (mounted) {
+              setState(() {
+                _isFlashing = false;
+              });
+            }
+          });
+        }
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final text = (displayedNumber ?? 0).toString();
+    final text = (widget.displayedNumber ?? 0).toString();
     
     // Determine color based on critical rolls
     Color numberColor = Colors.black87;
-    if (!isRolling && displayedNumber != null && minPossible != null && maxPossible != null) {
-      if (displayedNumber == maxPossible) {
+    if (!widget.isRolling && widget.displayedNumber != null && widget.minPossible != null && widget.maxPossible != null) {
+      if (widget.displayedNumber == widget.maxPossible) {
         numberColor = Colors.green.shade700;
-      } else if (displayedNumber == minPossible) {
+      } else if (widget.displayedNumber == widget.minPossible) {
         numberColor = Colors.red.shade700;
       }
+    }
+    
+    // Determine shadows based on state
+    List<Shadow> shadows;
+    if (widget.isRolling) {
+      shadows = [
+        const Shadow(blurRadius: 24, color: Colors.deepPurpleAccent),
+      ];
+    } else if (_isFlashing) {
+      if (_isMaxCrit) {
+        // Bright flash for maximum crit
+        shadows = [
+          Shadow(blurRadius: 40, color: Colors.green.shade400.withOpacity(0.9)),
+          Shadow(blurRadius: 60, color: Colors.green.shade300.withOpacity(0.7)),
+          const Shadow(blurRadius: 80, color: Colors.greenAccent),
+        ];
+      } else {
+        // Dark flash for minimum crit failure
+        shadows = [
+          Shadow(blurRadius: 40, color: Colors.red.shade700.withOpacity(0.9)),
+          Shadow(blurRadius: 60, color: Colors.red.shade900.withOpacity(0.7)),
+          const Shadow(blurRadius: 80, color: Colors.black54),
+        ];
+      }
+    } else {
+      shadows = [
+        const Shadow(blurRadius: 8, color: Colors.white),
+        const Shadow(blurRadius: 16, color: Colors.white),
+      ];
     }
 
     return AnimatedSwitcher(
@@ -54,15 +121,8 @@ class BigNumberDisplay extends StatelessWidget {
           style: TextStyle(
             fontSize: 88,
             fontWeight: FontWeight.w900,
-            color: isRolling ? Colors.deepPurple : numberColor,
-            shadows: isRolling
-                ? [
-                    const Shadow(blurRadius: 24, color: Colors.deepPurpleAccent),
-                  ]
-                : [
-                    const Shadow(blurRadius: 8, color: Colors.white),
-                    const Shadow(blurRadius: 16, color: Colors.white),
-                  ],
+            color: widget.isRolling ? Colors.deepPurple : numberColor,
+            shadows: shadows,
           ),
           textAlign: TextAlign.center,
         ),
