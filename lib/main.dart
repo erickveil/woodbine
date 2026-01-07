@@ -17,7 +17,7 @@ void main() async {
   // Fixed pager-like window size for desktop platforms
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     const double width = 420;
-    const double minHeight = 680;
+    const double minHeight = 840;
 
     window_size.setWindowTitle('Woodbine v$version');
     final info = await window_size.getWindowInfo();
