@@ -44,9 +44,18 @@ class RollHistoryCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${record.rolls.length}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
+                        '${record.originalDiceCount}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
+                      if (record.explodeEnabled && record.explodeValue != null)
+                        Text(
+                          'Explode ≥${record.explodeValue} (${record.rolls.length} dice rolled)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.deepOrange,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       if (record.targetEnabled && record.target != null)
                         Text(
                           _getTargetResultText(record),

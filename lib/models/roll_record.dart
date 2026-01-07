@@ -6,6 +6,9 @@ class RollRecord {
   final int sides;
   final int? target;
   final bool targetEnabled;
+  final int? explodeValue;
+  final bool explodeEnabled;
+  final int originalDiceCount; // Number of dice originally rolled (before explosions)
 
   RollRecord({
     required this.time,
@@ -15,5 +18,8 @@ class RollRecord {
     required this.sides,
     this.target,
     this.targetEnabled = false,
-  });
+    this.explodeValue,
+    this.explodeEnabled = false,
+    int? originalDiceCount,
+  }) : originalDiceCount = originalDiceCount ?? rolls.length;
 }

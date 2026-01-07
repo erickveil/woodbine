@@ -23,6 +23,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   int _modifier = 0;
   int _target = 10;
   bool _targetEnabled = false;
+  int _explodeValue = 6;
+  bool _explodeEnabled = false;
 
   int? _displayedNumber;
   bool _isRolling = false;
@@ -39,6 +41,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   final int _maxModifier = 10000;
   final int _minTarget = 1;
   final int _maxTarget = 10000;
+  final int _minExplode = 2;
+  final int _maxExplode = 1000;
 
   // UI state
   bool _showBreakdown = true;
@@ -68,6 +72,23 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     // Simulate actual dice rolls to compute the final result and keep breakdown
     List<int> rolls =
         List.generate(_diceCount, (_) => _rng.nextInt(_sides) + 1);
+    
+    // Handle exploding dice
+    if (_explodeEnabled) {
+      int maxIterations = 1000; // Safety limit to prevent infinite loops
+      int iterations = 0;
+      int i = 0;
+      while (i < rolls.length && iterations < maxIterations) {
+        if (rolls[i] >= _explodeValue) {
+          // This die explodes! Add another die
+          int newRoll = _rng.nextInt(_sides) + 1;
+          rolls.add(newRoll);
+        }
+        i++;
+        iterations++;
+      }
+    }
+    
     int finalResult = rolls.fold(0, (p, e) => p + e) + _modifier;
 
     // Animation: cycle through random numbers in [minValue, maxValue],
@@ -97,6 +118,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       sides: _sides,
       target: _targetEnabled ? _target : null,
       targetEnabled: _targetEnabled,
+      explodeValue: _explodeEnabled ? _explodeValue : null,
+      explodeEnabled: _explodeEnabled,
+      originalDiceCount: _diceCount,
     );
 
     setState(() {
@@ -121,15 +145,34 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       _isRolling = true;
     });
 
-    final int count = record.rolls.length;
+    final int count = record.originalDiceCount;
     final int sides = record.sides;
     final int modifier = record.modifier;
+    final bool explodeEnabled = record.explodeEnabled;
+    final int? explodeValue = record.explodeValue;
 
     final int minValue = count * 1 + modifier;
     final int maxValue = count * sides + modifier;
 
     // perform new rolls (but do not change UI inputs)
     List<int> rolls = List.generate(count, (_) => _rng.nextInt(sides) + 1);
+    
+    // Handle exploding dice
+    if (explodeEnabled && explodeValue != null) {
+      int maxIterations = 1000; // Safety limit to prevent infinite loops
+      int iterations = 0;
+      int i = 0;
+      while (i < rolls.length && iterations < maxIterations) {
+        if (rolls[i] >= explodeValue) {
+          // This die explodes! Add another die
+          int newRoll = _rng.nextInt(sides) + 1;
+          rolls.add(newRoll);
+        }
+        i++;
+        iterations++;
+      }
+    }
+    
     int finalResult = rolls.fold(0, (p, e) => p + e) + modifier;
 
     // Animation similar to _rollDice but using the record's configuration
@@ -153,6 +196,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       sides: sides,
       target: record.target,
       targetEnabled: record.targetEnabled,
+      explodeValue: record.explodeValue,
+      explodeEnabled: record.explodeEnabled,
+      originalDiceCount: record.originalDiceCount,
     );
 
     setState(() {
@@ -254,6 +300,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       modifier: _modifier,
       target: _target,
       targetEnabled: _targetEnabled,
+      explodeValue: _explodeValue,
+      explodeEnabled: _explodeEnabled,
       narrow: narrow,
       onDiceDecrement: () {
         setState(() {
@@ -306,6 +354,21 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
           _targetEnabled = enabled;
         });
       },
+      onExplodeDecrement: () {
+        setState(() {
+          _explodeValue = max(_minExplode, _explodeValue - 1);
+        });
+      },
+      onExplodeIncrement: () {
+        setState(() {
+          _explodeValue = min(_maxExplode, _explodeValue + 1);
+        });
+      },
+      onExplodeEnabledChanged: (enabled) {
+        setState(() {
+          _explodeEnabled = enabled;
+        });
+      },
       onPresetSelected: (preset) {
         setState(() {
           _diceCount = 1;
@@ -335,6 +398,11 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       onTargetChanged: (value) {
         setState(() {
           _target = max(_minTarget, min(_maxTarget, value));
+        });
+      },
+      onExplodeChanged: (value) {
+        setState(() {
+          _explodeValue = max(_minExplode, min(_maxExplode, value));
         });
       },
     );

@@ -8,6 +8,8 @@ class DiceControls extends StatelessWidget {
   final int modifier;
   final int target;
   final bool targetEnabled;
+  final int explodeValue;
+  final bool explodeEnabled;
   final VoidCallback onDiceDecrement;
   final VoidCallback onDiceIncrement;
   final VoidCallback onSidesDecrement;
@@ -16,12 +18,16 @@ class DiceControls extends StatelessWidget {
   final VoidCallback onModifierIncrement;
   final VoidCallback onTargetDecrement;
   final VoidCallback onTargetIncrement;
+  final VoidCallback onExplodeDecrement;
+  final VoidCallback onExplodeIncrement;
   final ValueChanged<bool> onTargetEnabledChanged;
+  final ValueChanged<bool> onExplodeEnabledChanged;
   final ValueChanged<int> onPresetSelected;
   final ValueChanged<int> onDiceChanged;
   final ValueChanged<int> onSidesChanged;
   final ValueChanged<int> onModifierChanged;
   final ValueChanged<int> onTargetChanged;
+  final ValueChanged<int> onExplodeChanged;
   final bool narrow;
 
   const DiceControls({
@@ -31,6 +37,8 @@ class DiceControls extends StatelessWidget {
     required this.modifier,
     required this.target,
     required this.targetEnabled,
+    required this.explodeValue,
+    required this.explodeEnabled,
     required this.onDiceDecrement,
     required this.onDiceIncrement,
     required this.onSidesDecrement,
@@ -39,12 +47,16 @@ class DiceControls extends StatelessWidget {
     required this.onModifierIncrement,
     required this.onTargetDecrement,
     required this.onTargetIncrement,
+    required this.onExplodeDecrement,
+    required this.onExplodeIncrement,
     required this.onTargetEnabledChanged,
+    required this.onExplodeEnabledChanged,
     required this.onPresetSelected,
     required this.onDiceChanged,
     required this.onSidesChanged,
     required this.onModifierChanged,
     required this.onTargetChanged,
+    required this.onExplodeChanged,
     this.narrow = false,
   });
 
@@ -87,6 +99,8 @@ class DiceControls extends StatelessWidget {
               _buildModifierControlNarrow(context),
               const SizedBox(height: 12),
               _buildTargetControlNarrow(context),
+              const SizedBox(height: 12),
+              _buildExplodeControlNarrow(context),
             ],
           )
         : Column(
@@ -126,6 +140,8 @@ class DiceControls extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _buildTargetControlWide(context),
+              const SizedBox(height: 12),
+              _buildExplodeControlWide(context),
             ],
           );
   }
@@ -397,6 +413,120 @@ class DiceControls extends StatelessWidget {
             Switch(
               value: targetEnabled,
               onChanged: onTargetEnabledChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExplodeControlNarrow(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Explode',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            if (explodeEnabled) ...[
+              IconButton(
+                onPressed: onExplodeDecrement,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              GestureDetector(
+                onTap: () => _showInputDialog(
+                    context, 'Explode', explodeValue, onExplodeChanged),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    explodeValue.toString(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onExplodeIncrement,
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+            ] else
+              const Expanded(child: SizedBox()),
+            Switch(
+              value: explodeEnabled,
+              onChanged: onExplodeEnabledChanged,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExplodeControlWide(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Explode',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            if (explodeEnabled) ...[
+              IconButton(
+                onPressed: onExplodeDecrement,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              GestureDetector(
+                onTap: () => _showInputDialog(
+                    context, 'Explode', explodeValue, onExplodeChanged),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    explodeValue.toString(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onExplodeIncrement,
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+            ] else
+              const Expanded(child: SizedBox()),
+            Switch(
+              value: explodeEnabled,
+              onChanged: onExplodeEnabledChanged,
             ),
           ],
         ),
