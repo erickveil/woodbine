@@ -3,16 +3,30 @@ import 'package:flutter/material.dart';
 class BigNumberDisplay extends StatelessWidget {
   final int? displayedNumber;
   final bool isRolling;
+  final int? minPossible;
+  final int? maxPossible;
 
   const BigNumberDisplay({
     super.key,
     required this.displayedNumber,
     required this.isRolling,
+    this.minPossible,
+    this.maxPossible,
   });
 
   @override
   Widget build(BuildContext context) {
     final text = (displayedNumber ?? 0).toString();
+    
+    // Determine color based on critical rolls
+    Color numberColor = Colors.black87;
+    if (!isRolling && displayedNumber != null && minPossible != null && maxPossible != null) {
+      if (displayedNumber == maxPossible) {
+        numberColor = Colors.green.shade700;
+      } else if (displayedNumber == minPossible) {
+        numberColor = Colors.red.shade700;
+      }
+    }
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 260),
@@ -40,7 +54,7 @@ class BigNumberDisplay extends StatelessWidget {
           style: TextStyle(
             fontSize: 88,
             fontWeight: FontWeight.w900,
-            color: isRolling ? Colors.deepPurple : Colors.black87,
+            color: isRolling ? Colors.deepPurple : numberColor,
             shadows: isRolling
                 ? [
                     const Shadow(blurRadius: 24, color: Colors.deepPurpleAccent),

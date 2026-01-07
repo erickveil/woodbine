@@ -48,6 +48,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     _displayedNumber = _diceCount + _modifier;
   }
 
+  int get _minPossibleValue => _diceCount * 1 + _modifier;
+  int get _maxPossibleValue => _diceCount * _sides + _modifier;
+
   Future<void> _rollDice() async {
     if (_isRolling) return;
 
@@ -225,6 +228,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
         child: BigNumberDisplay(
           displayedNumber: _displayedNumber,
           isRolling: _isRolling,
+          minPossible: _minPossibleValue,
+          maxPossible: _maxPossibleValue,
         ),
       ),
     );
