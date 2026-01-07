@@ -38,16 +38,35 @@ class RollBreakdown extends StatelessWidget {
     List<Widget> chips = [];
     
     for (int i = 0; i < rolls.length; i++) {
+      final int roll = rolls[i];
+      Color? backgroundColor;
+      Color? textColor;
+      
+      // Color based on critical rolls
+      if (roll == sides) {
+        // Maximum roll
+        backgroundColor = Colors.green.shade100;
+        textColor = Colors.green.shade900;
+      } else if (roll == 1) {
+        // Minimum roll
+        backgroundColor = Colors.red.shade100;
+        textColor = Colors.red.shade900;
+      } else {
+        backgroundColor = Colors.grey[100];
+        textColor = null;
+      }
+      
       chips.add(
         Chip(
           label: Text(
-            '${rolls[i]}',
-            style: const TextStyle(
+            '$roll',
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
+              color: textColor,
             ),
           ),
-          backgroundColor: Colors.grey[100],
+          backgroundColor: backgroundColor,
         ),
       );
     }

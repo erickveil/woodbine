@@ -78,7 +78,32 @@ class RollHistoryCard extends StatelessWidget {
       final remaining = record.rolls.length - maxShown;
       final chips = <Widget>[];
       for (int i = 0; i < shown.length; i++) {
-        chips.add(Chip(label: Text('${shown[i]}'), backgroundColor: Colors.grey[100]));
+        final int roll = shown[i];
+        Color? backgroundColor;
+        Color? textColor;
+        
+        // Color based on critical rolls
+        if (roll == record.sides) {
+          backgroundColor = Colors.green.shade100;
+          textColor = Colors.green.shade900;
+        } else if (roll == 1) {
+          backgroundColor = Colors.red.shade100;
+          textColor = Colors.red.shade900;
+        } else {
+          backgroundColor = Colors.grey[100];
+          textColor = null;
+        }
+        
+        chips.add(Chip(
+          label: Text(
+            '$roll',
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: backgroundColor,
+        ));
       }
       chips.add(Chip(label: Text('… +$remaining more'), backgroundColor: Colors.grey[200]));
       chips.add(Chip(
