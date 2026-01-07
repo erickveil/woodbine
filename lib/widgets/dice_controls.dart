@@ -296,61 +296,51 @@ class DiceControls extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Column(
+        child: Row(
           children: [
-            Row(
-              children: [
-                const SizedBox(
-                  width: _labelWidth,
-                  child: Text(
-                    'Target',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Target',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                const Spacer(),
-                Switch(
-                  value: targetEnabled,
-                  onChanged: onTargetEnabledChanged,
-                ),
-              ],
+              ),
             ),
             if (targetEnabled) ...[
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: onTargetDecrement,
-                    icon: const Icon(Icons.remove_circle_outline),
-                  ),
-                  GestureDetector(
-                    onTap: () => _showInputDialog(
-                        context, 'Target', target, onTargetChanged),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black12),
-                        borderRadius: BorderRadius.circular(8),
-                        color: Colors.white,
-                      ),
-                      child: Text(
-                        target.toString(),
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: onTargetIncrement,
-                    icon: const Icon(Icons.add_circle_outline),
-                  ),
-                ],
+              IconButton(
+                onPressed: onTargetDecrement,
+                icon: const Icon(Icons.remove_circle_outline),
               ),
-            ],
+              GestureDetector(
+                onTap: () => _showInputDialog(
+                    context, 'Target', target, onTargetChanged),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    target.toString(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onTargetIncrement,
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+            ] else
+              const Expanded(child: SizedBox()),
+            Switch(
+              value: targetEnabled,
+              onChanged: onTargetEnabledChanged,
+            ),
           ],
         ),
       ),
