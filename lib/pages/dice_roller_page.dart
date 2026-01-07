@@ -21,6 +21,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   int _diceCount = 1;
   int _sides = 6;
   int _modifier = 0;
+  int _target = 10;
+  bool _targetEnabled = false;
 
   int? _displayedNumber;
   bool _isRolling = false;
@@ -35,6 +37,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
   final int _maxSides = 1000; // arbitrary practical limit
   final int _minModifier = -10000;
   final int _maxModifier = 10000;
+  final int _minTarget = 1;
+  final int _maxTarget = 10000;
 
   // UI state
   bool _showBreakdown = true;
@@ -62,7 +66,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     final int maxValue = _diceCount * _sides + _modifier;
 
     // Simulate actual dice rolls to compute the final result and keep breakdown
-    List<int> rolls = List.generate(_diceCount, (_) => _rng.nextInt(_sides) + 1);
+    List<int> rolls =
+        List.generate(_diceCount, (_) => _rng.nextInt(_sides) + 1);
     int finalResult = rolls.fold(0, (p, e) => p + e) + _modifier;
 
     // Animation: cycle through random numbers in [minValue, maxValue],
@@ -90,6 +95,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       modifier: _modifier,
       total: finalResult,
       sides: _sides,
+      target: _targetEnabled ? _target : null,
+      targetEnabled: _targetEnabled,
     );
 
     setState(() {
@@ -144,6 +151,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       modifier: modifier,
       total: finalResult,
       sides: sides,
+      target: record.target,
+      targetEnabled: record.targetEnabled,
     );
 
     setState(() {
@@ -207,9 +216,10 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
           ),
           child: Card(
             margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 6,
-            color: Colors.transparent, 
+            color: Colors.transparent,
             //color: Colors.white.withOpacity(0.6),
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -230,6 +240,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
           isRolling: _isRolling,
           minPossible: _minPossibleValue,
           maxPossible: _maxPossibleValue,
+          target: _target,
+          targetEnabled: _targetEnabled,
         ),
       ),
     );
@@ -240,6 +252,8 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       diceCount: _diceCount,
       sides: _sides,
       modifier: _modifier,
+      target: _target,
+      targetEnabled: _targetEnabled,
       narrow: narrow,
       onDiceDecrement: () {
         setState(() {
@@ -277,6 +291,21 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
           _displayedNumber = _diceCount + _modifier;
         });
       },
+      onTargetDecrement: () {
+        setState(() {
+          _target = max(_minTarget, _target - 1);
+        });
+      },
+      onTargetIncrement: () {
+        setState(() {
+          _target = min(_maxTarget, _target + 1);
+        });
+      },
+      onTargetEnabledChanged: (enabled) {
+        setState(() {
+          _targetEnabled = enabled;
+        });
+      },
       onPresetSelected: (preset) {
         setState(() {
           _diceCount = 1;
@@ -301,6 +330,11 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
         setState(() {
           _modifier = max(_minModifier, min(_maxModifier, value));
           _displayedNumber = _diceCount + _modifier;
+        });
+      },
+      onTargetChanged: (value) {
+        setState(() {
+          _target = max(_minTarget, min(_maxTarget, value));
         });
       },
     );
@@ -330,7 +364,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       child: SingleChildScrollView(
         child: Stack(
           children: [
-          /*
+            /*
             // Background image that extends to full window width
             Positioned.fill(
               child: Container(

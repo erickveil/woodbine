@@ -34,14 +34,29 @@ class RollHistoryCard extends StatelessWidget {
                   backgroundColor: Colors.deepPurple,
                   child: Text(
                     record.total.toString(),
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    '${record.rolls.length}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${record.rolls.length}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      if (record.targetEnabled && record.target != null)
+                        Text(
+                          _getTargetResultText(record),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: _getTargetResultColor(record),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 Text(
@@ -64,6 +79,38 @@ class RollHistoryCard extends StatelessWidget {
     );
   }
 
+  String _getTargetResultText(RollRecord record) {
+    final isCritSuccess =
+        record.total == record.rolls.length * record.sides + record.modifier;
+    final isCritFailure = record.total == record.rolls.length + record.modifier;
+
+    if (isCritSuccess) {
+      return 'Target ${record.target}: CRIT SUCCESS!';
+    } else if (isCritFailure) {
+      return 'Target ${record.target}: CRIT FAILURE!';
+    } else if (record.total >= record.target!) {
+      return 'Target ${record.target}: Success';
+    } else {
+      return 'Target ${record.target}: Failure';
+    }
+  }
+
+  Color _getTargetResultColor(RollRecord record) {
+    final isCritSuccess =
+        record.total == record.rolls.length * record.sides + record.modifier;
+    final isCritFailure = record.total == record.rolls.length + record.modifier;
+
+    if (isCritSuccess) {
+      return Colors.green.shade700;
+    } else if (isCritFailure) {
+      return Colors.red.shade700;
+    } else if (record.total >= record.target!) {
+      return Colors.green.shade900;
+    } else {
+      return Colors.red.shade900;
+    }
+  }
+
   Widget _buildRollsPreview() {
     const int maxShown = 12;
     if (record.rolls.length <= maxShown) {
@@ -81,7 +128,7 @@ class RollHistoryCard extends StatelessWidget {
         final int roll = shown[i];
         Color? backgroundColor;
         Color? textColor;
-        
+
         // Color based on critical rolls
         if (roll == record.sides) {
           backgroundColor = Colors.green.shade100;
@@ -93,7 +140,7 @@ class RollHistoryCard extends StatelessWidget {
           backgroundColor = Colors.grey[100];
           textColor = null;
         }
-        
+
         chips.add(Chip(
           label: Text(
             '$roll',
@@ -105,9 +152,12 @@ class RollHistoryCard extends StatelessWidget {
           backgroundColor: backgroundColor,
         ));
       }
-      chips.add(Chip(label: Text('… +$remaining more'), backgroundColor: Colors.grey[200]));
       chips.add(Chip(
-        label: Text('mod ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}'),
+          label: Text('… +$remaining more'),
+          backgroundColor: Colors.grey[200]));
+      chips.add(Chip(
+        label: Text(
+            'mod ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}'),
         backgroundColor: Colors.grey[200],
       ));
       return Wrap(spacing: 8, runSpacing: 6, children: chips);

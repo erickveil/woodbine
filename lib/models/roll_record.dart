@@ -4,6 +4,8 @@ class RollRecord {
   final int modifier;
   final int total;
   final int sides;
+  final int? target;
+  final bool targetEnabled;
 
   RollRecord({
     required this.time,
@@ -11,5 +13,7 @@ class RollRecord {
     required this.modifier,
     required this.total,
     required this.sides,
+    this.target,
+    this.targetEnabled = false,
   });
 }

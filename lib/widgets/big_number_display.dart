@@ -5,6 +5,8 @@ class BigNumberDisplay extends StatefulWidget {
   final bool isRolling;
   final int? minPossible;
   final int? maxPossible;
+  final int? target;
+  final bool targetEnabled;
 
   const BigNumberDisplay({
     super.key,
@@ -12,6 +14,8 @@ class BigNumberDisplay extends StatefulWidget {
     required this.isRolling,
     this.minPossible,
     this.maxPossible,
+    this.target,
+    this.targetEnabled = false,
   });
 
   @override
@@ -25,20 +29,22 @@ class _BigNumberDisplayState extends State<BigNumberDisplay> {
   @override
   void didUpdateWidget(BigNumberDisplay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Detect when we transition from rolling to not rolling with a crit
     if (oldWidget.isRolling && !widget.isRolling) {
       final displayedNumber = widget.displayedNumber;
       final minPossible = widget.minPossible;
       final maxPossible = widget.maxPossible;
-      
-      if (displayedNumber != null && minPossible != null && maxPossible != null) {
+
+      if (displayedNumber != null &&
+          minPossible != null &&
+          maxPossible != null) {
         if (displayedNumber == maxPossible || displayedNumber == minPossible) {
           setState(() {
             _isFlashing = true;
             _isMaxCrit = displayedNumber == maxPossible;
           });
-          
+
           // Stop flashing after a brief moment
           Future.delayed(const Duration(milliseconds: 600), () {
             if (mounted) {
@@ -55,17 +61,34 @@ class _BigNumberDisplayState extends State<BigNumberDisplay> {
   @override
   Widget build(BuildContext context) {
     final text = (widget.displayedNumber ?? 0).toString();
-    
-    // Determine color based on critical rolls
+
+    // Determine color based on critical rolls and target mode
     Color numberColor = Colors.black87;
-    if (!widget.isRolling && widget.displayedNumber != null && widget.minPossible != null && widget.maxPossible != null) {
-      if (widget.displayedNumber == widget.maxPossible) {
+    if (!widget.isRolling &&
+        widget.displayedNumber != null &&
+        widget.minPossible != null &&
+        widget.maxPossible != null) {
+      final isCritSuccess = widget.displayedNumber == widget.maxPossible;
+      final isCritFailure = widget.displayedNumber == widget.minPossible;
+
+      if (isCritSuccess) {
+        // Crit success is always success
         numberColor = Colors.green.shade700;
-      } else if (widget.displayedNumber == widget.minPossible) {
+      } else if (isCritFailure) {
+        // Crit failure is always failure
         numberColor = Colors.red.shade700;
+      } else if (widget.targetEnabled && widget.target != null) {
+        // Not a crit, but target mode is enabled
+        if (widget.displayedNumber! >= widget.target!) {
+          // Success: dark green
+          numberColor = Colors.green.shade900;
+        } else {
+          // Failure: dark red
+          numberColor = Colors.red.shade900;
+        }
       }
     }
-    
+
     // Determine shadows based on state
     List<Shadow> shadows;
     if (widget.isRolling) {
@@ -102,7 +125,8 @@ class _BigNumberDisplayState extends State<BigNumberDisplay> {
         final scale = Tween<double>(begin: 0.8, end: 1.0).animate(
           CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
         );
-        final offset = Tween<Offset>(begin: const Offset(0, -0.15), end: Offset.zero)
+        final offset = Tween<Offset>(
+                begin: const Offset(0, -0.15), end: Offset.zero)
             .animate(CurvedAnimation(parent: animation, curve: Curves.easeOut));
         return FadeTransition(
           opacity: animation,

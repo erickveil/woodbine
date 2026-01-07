@@ -2,20 +2,26 @@ import 'package:flutter/material.dart';
 
 class DiceControls extends StatelessWidget {
   static const double _labelWidth = 100;
-  
+
   final int diceCount;
   final int sides;
   final int modifier;
+  final int target;
+  final bool targetEnabled;
   final VoidCallback onDiceDecrement;
   final VoidCallback onDiceIncrement;
   final VoidCallback onSidesDecrement;
   final VoidCallback onSidesIncrement;
   final VoidCallback onModifierDecrement;
   final VoidCallback onModifierIncrement;
+  final VoidCallback onTargetDecrement;
+  final VoidCallback onTargetIncrement;
+  final ValueChanged<bool> onTargetEnabledChanged;
   final ValueChanged<int> onPresetSelected;
   final ValueChanged<int> onDiceChanged;
   final ValueChanged<int> onSidesChanged;
   final ValueChanged<int> onModifierChanged;
+  final ValueChanged<int> onTargetChanged;
   final bool narrow;
 
   const DiceControls({
@@ -23,16 +29,22 @@ class DiceControls extends StatelessWidget {
     required this.diceCount,
     required this.sides,
     required this.modifier,
+    required this.target,
+    required this.targetEnabled,
     required this.onDiceDecrement,
     required this.onDiceIncrement,
     required this.onSidesDecrement,
     required this.onSidesIncrement,
     required this.onModifierDecrement,
     required this.onModifierIncrement,
+    required this.onTargetDecrement,
+    required this.onTargetIncrement,
+    required this.onTargetEnabledChanged,
     required this.onPresetSelected,
     required this.onDiceChanged,
     required this.onSidesChanged,
     required this.onModifierChanged,
+    required this.onTargetChanged,
     this.narrow = false,
   });
 
@@ -73,6 +85,8 @@ class DiceControls extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _buildModifierControlNarrow(context),
+              const SizedBox(height: 12),
+              _buildTargetControlNarrow(context),
             ],
           )
         : Column(
@@ -110,6 +124,8 @@ class DiceControls extends StatelessWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              _buildTargetControlWide(context),
             ],
           );
   }
@@ -145,9 +161,11 @@ class DiceControls extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
             ),
             GestureDetector(
-              onTap: () => _showInputDialog(context, label, value, onDirectInput),
+              onTap: () =>
+                  _showInputDialog(context, label, value, onDirectInput),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black12),
                   borderRadius: BorderRadius.circular(8),
@@ -155,7 +173,8 @@ class DiceControls extends StatelessWidget {
                 ),
                 child: Text(
                   value.toString(),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -192,9 +211,12 @@ class DiceControls extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
             ),
             GestureDetector(
-              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged, allowNegative: true),
+              onTap: () => _showInputDialog(
+                  context, 'Modifier', modifier, onModifierChanged,
+                  allowNegative: true),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black12),
                   borderRadius: BorderRadius.circular(8),
@@ -202,7 +224,8 @@ class DiceControls extends StatelessWidget {
                 ),
                 child: Text(
                   modifier.toString(),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -239,9 +262,12 @@ class DiceControls extends StatelessWidget {
               icon: const Icon(Icons.remove_circle_outline),
             ),
             GestureDetector(
-              onTap: () => _showInputDialog(context, 'Modifier', modifier, onModifierChanged, allowNegative: true),
+              onTap: () => _showInputDialog(
+                  context, 'Modifier', modifier, onModifierChanged,
+                  allowNegative: true),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.black12),
                   borderRadius: BorderRadius.circular(8),
@@ -249,13 +275,138 @@ class DiceControls extends StatelessWidget {
                 ),
                 child: Text(
                   modifier.toString(),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
             IconButton(
               onPressed: onModifierIncrement,
               icon: const Icon(Icons.add_circle_outline),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTargetControlNarrow(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const SizedBox(
+                  width: _labelWidth,
+                  child: Text(
+                    'Target',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Switch(
+                  value: targetEnabled,
+                  onChanged: onTargetEnabledChanged,
+                ),
+              ],
+            ),
+            if (targetEnabled) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: onTargetDecrement,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  GestureDetector(
+                    onTap: () => _showInputDialog(
+                        context, 'Target', target, onTargetChanged),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.black12),
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                      ),
+                      child: Text(
+                        target.toString(),
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: onTargetIncrement,
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTargetControlWide(BuildContext context) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: _labelWidth,
+              child: Text(
+                'Target',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            if (targetEnabled) ...[
+              IconButton(
+                onPressed: onTargetDecrement,
+                icon: const Icon(Icons.remove_circle_outline),
+              ),
+              GestureDetector(
+                onTap: () => _showInputDialog(
+                    context, 'Target', target, onTargetChanged),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Text(
+                    target.toString(),
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: onTargetIncrement,
+                icon: const Icon(Icons.add_circle_outline),
+              ),
+            ] else
+              const Expanded(child: SizedBox()),
+            Switch(
+              value: targetEnabled,
+              onChanged: onTargetEnabledChanged,
             ),
           ],
         ),
@@ -278,14 +429,14 @@ class DiceControls extends StatelessWidget {
   }
 
   void _showInputDialog(
-    BuildContext context, 
-    String label, 
-    int currentValue, 
+    BuildContext context,
+    String label,
+    int currentValue,
     ValueChanged<int> onSubmit, {
     bool allowNegative = false,
   }) {
     final controller = TextEditingController(text: currentValue.toString());
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
