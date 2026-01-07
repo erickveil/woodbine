@@ -72,7 +72,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     // Simulate actual dice rolls to compute the final result and keep breakdown
     List<int> rolls =
         List.generate(_diceCount, (_) => _rng.nextInt(_sides) + 1);
-    
+
     // Handle exploding dice
     if (_explodeEnabled) {
       int maxIterations = 1000; // Safety limit to prevent infinite loops
@@ -88,7 +88,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
         iterations++;
       }
     }
-    
+
     int finalResult = rolls.fold(0, (p, e) => p + e) + _modifier;
 
     // Animation: cycle through random numbers in [minValue, maxValue],
@@ -156,7 +156,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
 
     // perform new rolls (but do not change UI inputs)
     List<int> rolls = List.generate(count, (_) => _rng.nextInt(sides) + 1);
-    
+
     // Handle exploding dice
     if (explodeEnabled && explodeValue != null) {
       int maxIterations = 1000; // Safety limit to prevent infinite loops
@@ -172,7 +172,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
         iterations++;
       }
     }
-    
+
     int finalResult = rolls.fold(0, (p, e) => p + e) + modifier;
 
     // Animation similar to _rollDice but using the record's configuration
@@ -199,6 +199,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       explodeValue: record.explodeValue,
       explodeEnabled: record.explodeEnabled,
       originalDiceCount: record.originalDiceCount,
+      title: record.title, // Inherit the title from the parent record
     );
 
     setState(() {
@@ -218,6 +219,59 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
     setState(() {
       _history.clear();
     });
+  }
+
+  Future<void> _showTitleEditDialog(RollRecord record) async {
+    final TextEditingController controller =
+        TextEditingController(text: record.title ?? '');
+
+    final result = await showDialog<({bool cancelled, String? title})>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(record.title == null ? 'Add Title' : 'Edit Title'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Enter title for this roll',
+              border: OutlineInputBorder(),
+            ),
+            maxLength: 50,
+            onSubmitted: (value) {
+              final text = value.trim();
+              Navigator.of(context)
+                  .pop((cancelled: false, title: text.isEmpty ? null : text));
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(context).pop((cancelled: true, title: null)),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                final text = controller.text.trim();
+                Navigator.of(context)
+                    .pop((cancelled: false, title: text.isEmpty ? null : text));
+              },
+              child: const Text('Accept'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result != null && !result.cancelled) {
+      // User accepted, update the record's title
+      final index = _history.indexOf(record);
+      if (index != -1) {
+        setState(() {
+          _history[index] = record.copyWith(title: result.title);
+        });
+      }
+    }
   }
 
   Widget _buildRollButton() {
@@ -424,6 +478,7 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       onClearHistory: _clearHistory,
       onReroll: _rerollFromRecord,
       formatDateTime: _formatUtcLocal,
+      onTitleEdit: _showTitleEditDialog,
     );
   }
 

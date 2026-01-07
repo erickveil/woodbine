@@ -8,7 +8,9 @@ class RollRecord {
   final bool targetEnabled;
   final int? explodeValue;
   final bool explodeEnabled;
-  final int originalDiceCount; // Number of dice originally rolled (before explosions)
+  final int
+      originalDiceCount; // Number of dice originally rolled (before explosions)
+  final String? title; // Optional user-defined title for this roll
 
   RollRecord({
     required this.time,
@@ -21,5 +23,23 @@ class RollRecord {
     this.explodeValue,
     this.explodeEnabled = false,
     int? originalDiceCount,
+    this.title,
   }) : originalDiceCount = originalDiceCount ?? rolls.length;
+
+  // Create a copy with updated title
+  RollRecord copyWith({String? title}) {
+    return RollRecord(
+      time: time,
+      rolls: rolls,
+      modifier: modifier,
+      total: total,
+      sides: sides,
+      target: target,
+      targetEnabled: targetEnabled,
+      explodeValue: explodeValue,
+      explodeEnabled: explodeEnabled,
+      originalDiceCount: originalDiceCount,
+      title: title,
+    );
+  }
 }

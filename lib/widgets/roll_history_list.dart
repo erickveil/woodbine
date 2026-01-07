@@ -15,6 +15,7 @@ class RollHistoryList extends StatelessWidget {
   final VoidCallback onClearHistory;
   final void Function(RollRecord) onReroll;
   final String Function(DateTime) formatDateTime;
+  final void Function(RollRecord) onTitleEdit;
 
   const RollHistoryList({
     super.key,
@@ -28,6 +29,7 @@ class RollHistoryList extends StatelessWidget {
     required this.onClearHistory,
     required this.onReroll,
     required this.formatDateTime,
+    required this.onTitleEdit,
   });
 
   @override
@@ -46,7 +48,8 @@ class RollHistoryList extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Last roll & history', style: TextStyle(fontWeight: FontWeight.w600)),
+        const Text('Last roll & history',
+            style: TextStyle(fontWeight: FontWeight.w600)),
         Row(
           children: [
             IconButton(
@@ -109,8 +112,10 @@ class RollHistoryList extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('History', style: TextStyle(fontWeight: FontWeight.w600)),
-            Text('${history.length} entries', style: const TextStyle(color: Colors.black54)),
+            const Text('History',
+                style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('${history.length} entries',
+                style: const TextStyle(color: Colors.black54)),
           ],
         ),
         const SizedBox(height: 8),
@@ -141,6 +146,7 @@ class RollHistoryList extends StatelessWidget {
           isRolling: isRolling,
           onReroll: () => onReroll(r),
           formatDateTime: formatDateTime,
+          onTitleEdit: onTitleEdit,
         );
       },
     );
@@ -150,8 +156,10 @@ class RollHistoryList extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text('Preview: ${diceCount}d$sides ${modifier >= 0 ? "+$modifier" : modifier}'),
-        Text('Range: ${diceCount * 1 + modifier} — ${diceCount * sides + modifier}'),
+        Text(
+            'Preview: ${diceCount}d$sides ${modifier >= 0 ? "+$modifier" : modifier}'),
+        Text(
+            'Range: ${diceCount * 1 + modifier} — ${diceCount * sides + modifier}'),
       ],
     );
   }

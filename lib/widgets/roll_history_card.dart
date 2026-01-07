@@ -8,6 +8,7 @@ class RollHistoryCard extends StatelessWidget {
   final bool isRolling;
   final VoidCallback onReroll;
   final String Function(DateTime) formatDateTime;
+  final void Function(RollRecord) onTitleEdit;
 
   const RollHistoryCard({
     super.key,
@@ -15,6 +16,7 @@ class RollHistoryCard extends StatelessWidget {
     required this.isRolling,
     required this.onReroll,
     required this.formatDateTime,
+    required this.onTitleEdit,
   });
 
   @override
@@ -22,67 +24,91 @@ class RollHistoryCard extends StatelessWidget {
     return Card(
       elevation: 1,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Colors.deepPurple,
-                  child: Text(
-                    record.total.toString(),
-                    style: const TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${record.originalDiceCount}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+      child: InkWell(
+        onTap: () => onTitleEdit(record),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (record.title != null) ...[
+                Row(
+                  children: [
+                    const Icon(Icons.label, size: 16, color: Colors.deepPurple),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        record.title!,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Colors.deepPurple,
+                        ),
                       ),
-                      if (record.explodeEnabled && record.explodeValue != null)
-                        Text(
-                          'Explode ≥${record.explodeValue} (${record.rolls.length} dice rolled)',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.deepOrange,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      if (record.targetEnabled && record.target != null)
-                        Text(
-                          _getTargetResultText(record),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _getTargetResultColor(record),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Text(
-                  formatDateTime(record.time),
-                  style: const TextStyle(color: Colors.black54, fontSize: 12),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  tooltip: 'Re-roll this entry',
-                  onPressed: isRolling ? null : onReroll,
-                  icon: const Icon(Icons.refresh),
-                ),
+                const SizedBox(height: 8),
               ],
-            ),
-            const SizedBox(height: 8),
-            _buildRollsPreview(),
-          ],
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.deepPurple,
+                    child: Text(
+                      record.total.toString(),
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${record.originalDiceCount}d${record.sides} ${record.modifier >= 0 ? "+${record.modifier}" : record.modifier}',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        if (record.explodeEnabled &&
+                            record.explodeValue != null)
+                          Text(
+                            'Explode ≥${record.explodeValue} (${record.rolls.length} dice rolled)',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.deepOrange,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        if (record.targetEnabled && record.target != null)
+                          Text(
+                            _getTargetResultText(record),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _getTargetResultColor(record),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    formatDateTime(record.time),
+                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    tooltip: 'Re-roll this entry',
+                    onPressed: isRolling ? null : onReroll,
+                    icon: const Icon(Icons.refresh),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              _buildRollsPreview(),
+            ],
+          ),
         ),
       ),
     );
