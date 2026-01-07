@@ -274,7 +274,9 @@ class _DiceRollerPageState extends State<DiceRollerPage> {
       },
       onPresetSelected: (preset) {
         setState(() {
+          _diceCount = 1;
           _sides = preset;
+          _modifier = 0;
           _displayedNumber = _diceCount + _modifier;
         });
       },
